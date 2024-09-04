@@ -1,0 +1,95 @@
+# Anatomy of an Attack: Exposed keys to Crypto Mining
+
+At Permiso, we find that the majority of incidents we discover or respond to, start with exposed access keys. Attackers leverage these keys to gain access, then setup a mechanism to establish persistence, perform reconnaissance, and complete their mission. As an example, the following details the activity associated with a low sophistication crypto mining incident that Permiso investigated:
+
+[Image Info:
+- Alt Text: Hierarchy Fix
+https://permiso.io/hs-fs/hubfs/Permiso_Security_June2023/images/hierarchy_fix.webp?width=1084&height=457&name=hierarchy_fix.webp]
+
+## Stage One: Initial Compromise and Access
+
+In this situation the initial compromise of the client was a Gitlab vulnerability (CVE-2021-22205). The attacker exploited the vulnerability in Gitlab, and gained access to sensitive data, which included the access key for an Admin level identity in the victims AWS environment. The attackers initial access into the AWS environment was a `ListBuckets` that came through this access key from the Indonesian IP address `182.1.229.252` with a User-Agent of `S3 Browser 9.5.5 <https://s3browser.com>`. This User-Agent is indicative of the Windows GUI utility S3 Browser.
+
+> 💡 S3 Browser is a Windows GUI utility for interacting with S3. This is not a a utility that is typically used in this environment, or in many others that Permiso monitors.
+
+From a detection standpoint, the access was noticeably anomalous. This identity has never accessed this environment from an Indonesian IP, or with a User-Agent indicative of S3 Browser. In fact, this victim organization had not observed this geo location or User-Agent related to any identity access previously.
+
+## Stage Two: Escalate Privileges and Maintain Access
+
+The attacker, now with access into the environment, wants to escalate privileges as needed, and also setup a method to maintain access should the exposed key be discovered. Still using S3 Browser, the attacker attempted to `PutUserPolicy` to add a policy named `dq` to an existing identity associated with backups. The `PutUserPolicy` attempt failed as the attacker did not include a valid resource name in the policy. The attacker left the template parameter for the resource `arn:aws:s3:::<YOUR-BUCKET-NAME>/*`:
+
+```
+{
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::<YOUR-BUCKET-NAME>/*",
+      "Condition": {}
+    }
+  ]
+}
+```
+
+Once this failed the attacker decided to instead create a new identity to maintain access. The attacker leveraged the stolen access key to `CreateUser` named `backup` and `CreateAccessKey` via S3 Browser.
+
+> 💡 Attackers often use common generic names like backup, service, and test when creating new identities.
+
+The attacker than initiated a `PutUserPolicy` to create a policy named `backupuser` which allowed full privileges to all resources for the identity `backup`:
+
+```
+{
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "*",
+      "Resource": "*",
+      "Condition": {}
+    }
+  ]
+}
+```
+
+Armed with the new identity `backup` the attacker now began enumeration efforts. The attacker logged into AWS console with the newly created `backup` identity and explored the services, while also continuing to enumerate S3 with S3 browser with the original stolen access key and the access key created for the `backup` identity. Services explored by the attacker included:
+
+- health.amazonaws.com
+- support.amazonaws.com
+- ec2.amazonaws.com
+- elasticloadbalancing.amazonaws.com
+- s3.amazonaws.com
+- cloudfront.amazonaws.com
+- trustedadvisor.amazonaws.com
+- monitoring.amazonaws.com
+- compute-optimizer.amazonaws.com
+
+## Stage Three: Complete Mission
+
+About thirty-one (31) minutes after initial access, the attacker began to use the AWS web console to create EC2 instances for the purpose of crypto mining. Using the AWS EC2 launch wizard the attacker would `CreateKeyPair` and `CreateSecurityGroup` to attach to an EC2 instance that would allow unfettered tcp/22 (ssh access) to the instance:
+
+```
+{
+  "groupOwnerId": "redacted",
+  "fromPort": 22,
+  "groupId": "redacted",
+  "isEgress": false,
+  "toPort": 22,
+  "cidrIpv4": "0.0.0.0/0",
+  "ipProtocol": "tcp",
+  "securityGroupRuleId": "redacted"
+}
+```
+
+The attacker attempted to spin-up dozens of `xlarge` EC2 instances across many regions, but ran into resource limitations along the way:
+`We currently do not have sufficient p3.16xlarge capacity in zones with support for 'gp2' volumes. Our system will be working on provisioning additional capacity.`
+In total the attacker successfully created thirteen (13) ec2 instances in five (5) different regions. All Instances had the following attributes:
+
+- Sized `xlarge`
+- Had detailed cloudwatch monitoring disabled `"monitoring": {"state": "disabled"}`
+- TCP/22 open to 0.0.0.0 (everyone)
+- IPv4 enabled, IPv6 disabled
+- HttpTokens set to optional
+- Xen hypervisor
+
+## Conclusion
+
+Exposed keys are the main method of initial access that Permiso observes. In this incident the attacker leveraged that stolen key to create a second identity to maintain access, perform recon, and ultimately complete their mission of spinning up EC2 instances for crypto mining. Just like the on premise world, low sophisticated attackers can be successful in completing their mission. As more organizations move workflows to the cloud, attackers of all skill levels will increase targeting.
