@@ -9,55 +9,17 @@ from utils import dump_yaml
 
 class Parser:
     @staticmethod
-    def _is_descendant(parent: Tag, child: Tag | NavigableString) -> bool:
-        ancestor = child.parent
-        while ancestor is not None:
-            if ancestor == parent:
-                return True
-            ancestor = ancestor.parent
-        return False
+    def _clean_soup(soup: BeautifulSoup) -> None:
+        for comment in soup.find_all(string=lambda text: isinstance(text, Comment)):
+            comment.extract()
 
-    @staticmethod
-    def _get_previous_outer_element(element: Tag, tag_names_to_skip: set[str] = None) -> Tag | NavigableString | None:
-        previous_tag = None
-        previous_navigable_string = None
-        previous_element = element.previous
+        for invisible_element in soup.find_all(style=re.compile(r'display\s*:\s*none', re.IGNORECASE)):
+            invisible_element.decompose()
 
-        while True:
-            if previous_element is None or (previous_tag and previous_navigable_string):
-                break
-            if not Parser._is_descendant(previous_element, element):
-                if not previous_navigable_string and isinstance(previous_element, NavigableString) and not isinstance(previous_element, Comment) and previous_element != '\n' and previous_element != ' ':
-                    previous_navigable_string = previous_element
-                if not previous_tag and isinstance(previous_element, Tag) and (not tag_names_to_skip or (tag_names_to_skip and previous_element.name not in tag_names_to_skip)):
-                    previous_tag = previous_element
-            previous_element = previous_element.previous
-
-        if not previous_navigable_string and not previous_tag:
-            return None
-        if previous_navigable_string and not previous_tag:
-            return previous_navigable_string
-        elif previous_tag and not previous_navigable_string:
-            return previous_tag
-        else:
-            if Parser._is_descendant(previous_tag, previous_navigable_string) and not Parser._is_descendant(previous_tag, element):
-                return previous_tag
-            else:
-                return previous_navigable_string
-
-    @staticmethod
-    def _get_next_outer_element(element: Tag, tag_names_to_skip: set[str] = None, ) -> Tag | NavigableString | None:
-        next_element = element.next
-
-        while True:
-            if next_element is None:
-                return None
-            if not Parser._is_descendant(element, next_element):
-                if isinstance(next_element, NavigableString) and not isinstance(next_element, Comment) and next_element != '\n' and next_element != ' ':
-                    return next_element
-                if isinstance(next_element, Tag) and (not tag_names_to_skip or (tag_names_to_skip and next_element.name not in tag_names_to_skip)):
-                    return next_element
-            next_element = next_element.next
+        tags_to_remove = ['nav', 'meta', 'style', 'script', 'noscript', 'form', 'button', 'aside']
+        for tag in tags_to_remove:
+            for element in soup.find_all(tag):
+                element.decompose()
 
     @staticmethod
     def _fix_structure(element: Tag) -> None:
@@ -67,7 +29,7 @@ class Parser:
             while i < len(children):
                 child = children[i]
                 if isinstance(child, Tag) and not child.decomposed:
-                    if child.name == 'p':
+                    if child.name == 'p' or child.name == 'em':
                         p_children = list(child.children)
                         img_index = next((index for index, p_child in enumerate(p_children) if isinstance(p_child, Tag) and p_child.name == 'img'), None)
                         if img_index is not None:
@@ -100,9 +62,16 @@ class Parser:
                             elif tag_children[0].name == 'span' and child.text.strip() == tag_children[0].text.strip():
                                 tag_grandchildren = [tag for tag in list(tag_children[0].children) if isinstance(tag, Tag)]
                                 if len(tag_grandchildren) == 1 and tag_grandchildren[0].name == 'em':
-                                    child.replace_with(tag_grandchildren[0])
-                                    child = tag_grandchildren[0]
-                                    child.name = 'figcaption'
+                                    em_grandchildren = [tag for tag in list(tag_grandchildren[0].children) if isinstance(tag, Tag)]
+                                    if len(em_grandchildren) == 1 and em_grandchildren[0].name == 'img':
+                                        img = em_grandchildren[0]
+                                        img.extract()
+                                        tag_children[0].insert_before(img)
+                                        continue
+                                    elif not em_grandchildren:
+                                        child.replace_with(tag_grandchildren[0])
+                                        child = tag_grandchildren[0]
+                                        child.name = 'figcaption'
                             elif tag_children[0].name == 'em' and child.text.strip() == tag_children[0].text.strip():
                                 child.replace_with(tag_children[0])
                                 child = tag_children[0]
@@ -168,50 +137,85 @@ class Parser:
                                     next_sibling.insert(0, tag_children[0])
                                     child.decompose()
                                     children = list(element.children)
-                    elif child.name == 'pre':
+                        else:
+                            thead_tag = child.find('thead')
+                            if thead_tag and not thead_tag.text.strip():
+                                thead_tag.decompose()
+                    elif child.name == 'div':
                         tag_children = [tag for tag in list(child.children) if isinstance(tag, Tag)]
-                        if tag_children and all(tag.name == 'code' for tag in tag_children):
-                            first_code_child = tag_children[0]
-                            for code_child in tag_children[1:]:
-                                for code_child_child in list(code_child.children):
-                                    first_code_child.append(code_child_child)
-                                code_child.decompose()
-                            next_sibling = child.find_next_sibling()
-                            if next_sibling and next_sibling.name == 'pre':
-                                next_sibling_tag_children = [tag for tag in list(next_sibling.children) if isinstance(tag, Tag)]
-                                if all(tag.name == 'code' for tag in next_sibling_tag_children):
-                                    for first_code_grandchild in reversed(list(first_code_child.children)):
-                                        if isinstance(first_code_grandchild, NavigableString) and first_code_grandchild.strip() != '' and not first_code_grandchild.endswith('\n'):
-                                            first_code_grandchild.replace_with(first_code_grandchild + '\n')
-                                            break
-                                        elif isinstance(first_code_grandchild, Tag) and not first_code_grandchild.string.endswith('\n'):
-                                            first_code_grandchild.string += '\n'
-                                            break
-                                    next_sibling.insert(0, first_code_child)
-                                    child.decompose()
-                                    children = list(element.children)
-                    elif child.name == 'span':
-                        tag_children = [tag for tag in list(child.children) if isinstance(tag, Tag)]
-                        if len(tag_children) == 1 and tag_children[0].name == 'em':
-                            child.replace_with(tag_children[0])
-                            child = tag_children[0]
+                        if tag_children and all(tag.name == 'pre' for tag in tag_children):
+                            if all(all(tag.name == 'code' for tag in list(pre.children) if isinstance(tag, Tag)) for pre in tag_children):
+                                new_pre_tag = Tag(name='pre')
+                                new_code_tag = Tag(name='code')
+                                new_pre_tag.append(new_code_tag)
+                                for tag in tag_children:
+                                    for code_tag in list(tag.children):
+                                        for code_tag_child in list(code_tag.children):
+                                            new_code_tag.append(code_tag_child)
+                                    tag.decompose()
+                                child.append(new_pre_tag)
 
                     Parser._fix_structure(child)
 
                 i += 1
 
     @staticmethod
-    def _decompose_non_relevant_elements(element: Tag, include_images: bool = True, content_finished: bool = False) -> bool:
+    def _is_descendant(parent: Tag, child: Tag | NavigableString) -> bool:
+        ancestor = child.parent
+        while ancestor is not None:
+            if ancestor == parent:
+                return True
+            ancestor = ancestor.parent
+        return False
+
+    @staticmethod
+    def _get_previous_outer_element(element: Tag, tag_names_to_skip: set[str] = None) -> Tag | NavigableString | None:
+        previous_tag = None
+        previous_navigable_string = None
+        previous_element = element.previous
+
+        while True:
+            if previous_element is None or (previous_tag and previous_navigable_string):
+                break
+            if not Parser._is_descendant(previous_element, element):
+                if not previous_navigable_string and isinstance(previous_element, NavigableString) and not isinstance(previous_element, Comment) and previous_element != '\n' and previous_element != ' ':
+                    previous_navigable_string = previous_element
+                if not previous_tag and isinstance(previous_element, Tag) and (not tag_names_to_skip or (tag_names_to_skip and previous_element.name not in tag_names_to_skip)):
+                    previous_tag = previous_element
+            previous_element = previous_element.previous
+
+        if not previous_navigable_string and not previous_tag:
+            return None
+        if previous_navigable_string and not previous_tag:
+            return previous_navigable_string
+        elif previous_tag and not previous_navigable_string:
+            return previous_tag
+        else:
+            if Parser._is_descendant(previous_tag, previous_navigable_string) and not Parser._is_descendant(previous_tag, element):
+                return previous_tag
+            else:
+                return previous_navigable_string
+
+    @staticmethod
+    def _get_next_outer_element(element: Tag, tag_names_to_skip: set[str] = None, ) -> Tag | NavigableString | None:
+        next_element = element.next
+
+        while True:
+            if next_element is None:
+                return None
+            if not Parser._is_descendant(element, next_element):
+                if isinstance(next_element, NavigableString) and not isinstance(next_element, Comment) and next_element != '\n' and next_element != ' ':
+                    return next_element
+                if isinstance(next_element, Tag) and (not tag_names_to_skip or (tag_names_to_skip and next_element.name not in tag_names_to_skip)):
+                    return next_element
+            next_element = next_element.next
+
+    @staticmethod
+    def _filter_elements(element: Tag, include_images: bool = True, content_finished: bool = False) -> bool:
         if not element.decomposed:
             for child in list(element.children):
-                if isinstance(child, Comment):
-                    child.extract()
-                elif isinstance(child, Tag) and not child.decomposed:
+                if isinstance(child, Tag) and not child.decomposed:
                     if content_finished:
-                        child.decompose()
-                    elif any(style in child.get('style', '') for style in ['display:none;', 'display: none;']):
-                        child.decompose()
-                    elif child.name in {'nav', 'meta', 'style', 'script', 'noscript', 'form', 'button', 'aside'}:
                         child.decompose()
                     elif child.name == 'footer' and not child.find_next('footer'):
                         content_finished = True
@@ -219,20 +223,15 @@ class Parser:
                     elif child.name in {'img', 'figure'}:
                         if not include_images:
                             next_element = Parser._get_next_outer_element(child)
-                            if isinstance(next_element, Tag) and next_element.name == 'noscript':
-                                next_element.decompose()
-                                next_element = Parser._get_next_outer_element(child)
                             if isinstance(next_element, Tag) and next_element.name in {'em', 'figcaption'}:
                                 next_element.decompose()
                             child.decompose()
                         elif 'alignright' in child.get('class', []) or element.name == 'li':
                             child.decompose()
+                    elif child.name == 'figcaption' and child.text.lower().strip() == '(click to enlarge)':
+                        child.decompose()
                     elif child.name == 'i' and child.text.lower().strip().startswith('updated'):
                         child.decompose()
-                    elif child.name == 'p':
-                        child_children = list(child.children)
-                        if (len([tag for tag in child_children if isinstance(tag, Tag)]) == 0 and not child.string) or child.string == '\xa0' or child.string == '\u200d' or child.text.lower().strip().startswith('this post is also available in'):
-                            child.decompose()
                     elif child.name == 'br':
                         next_element = Parser._get_next_outer_element(child)
                         if isinstance(next_element, Tag) and next_element.name == 'br':
@@ -241,7 +240,7 @@ class Parser:
                         stripped_lower_text = child.text.lower().strip()
                         if (stripped_lower_text.startswith('by:') or stripped_lower_text.startswith('published:')) and len(stripped_lower_text) < 100:
                             child.decompose()
-                    elif child.name in {'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'a', 'small', 'template', 'div', 'span'}:
+                    elif child.name in {'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'a', 'small', 'template', 'div', 'span'}:
                         classes = child.get('class', [])
                         combined_classes = ' '.join(classes).replace('_', '-')
                         while '--' in combined_classes:
@@ -249,9 +248,12 @@ class Parser:
                         stripped_lower_text = child.text.lower().strip()
                         if child.name in {'h1', 'h2', 'h3', 'h4', 'h5', 'h6'} and (stripped_lower_text == '' or stripped_lower_text == 'expel blog' or 'date-header' in combined_classes):
                             child.decompose()
+                        elif child.name == 'p':
+                            if (len([tag for tag in list(child.children) if isinstance(tag, Tag)]) == 0 and not child.string) or child.string == '\xa0' or child.string == '\u200d' or stripped_lower_text.startswith('this post is also available in') or stripped_lower_text == 'research' or 'date' in combined_classes:
+                                child.decompose()
                         elif child.name == 'a':
                             unwanted_classes = ['card-category', 'twitter-follow-button']
-                            if (child.get('href', '') == '/' and child.text.strip() == '..') or stripped_lower_text in {'register now!', 'permalink', 'comments', 'share'} or any(unwanted_class in combined_classes for unwanted_class in unwanted_classes):
+                            if (child.get('href', '') == '/' and stripped_lower_text == '..') or stripped_lower_text in {'register now!', 'permalink', 'comments', 'share'} or any(unwanted_class in combined_classes for unwanted_class in unwanted_classes):
                                 child.decompose()
                         elif child.name == 'small' and 'language' in combined_classes:  # If there are false negatives, consider using the aria-describedby attribute of the <pre> tag
                             child.decompose()
@@ -260,13 +262,13 @@ class Parser:
                             if any(unwanted_class in combined_classes for unwanted_class in unwanted_classes):
                                 child.decompose()
                         elif child.name in {'div', 'span'}:
-                            unwanted_classes = ['page-top', 'nav', 'breadcrumb', 'breadcrumbs', 'custom-meta', 'reading-time', 'function-list', 'duration', 'sidebar', 'table-of-contents', 'menu', 'dropdown', 'github-buttons', 'post-date', 'time-blog', 'author', 'back-to-blog', 'post-footer', 'button', 'btn', 'google-auto-placed', 'adsbygoogle', 'gist-meta', 'modal', 'subscribe', 'form', 'subscribeFormModal', 'close', 'latest-blogs', 'related-threat', 'newsletter', 'be-tags-wrapper', 'social']
+                            unwanted_classes = ['page-top', 'nav', 'breadcrumb', 'breadcrumbs', 'custom-meta', 'reading-time', 'function-list', 'duration', 'sidebar', 'table-of-contents', 'menu', 'dropdown', 'github-buttons', 'post-date', 'time-blog', 'author', 'back-to-blog', 'post-footer', 'button', 'btn', 'google-auto-placed', 'adsbygoogle', 'gist-meta', 'modal', 'subscribe', 'form', 'subscribeFormModal', 'close', 'latest-blogs', 'related-threat', 'newsletter', 'be-tags-wrapper', 'social', 'share-article', 'feedback-card']
                             if stripped_lower_text.count('cookie') >= 5 or ((stripped_lower_text.startswith('by:') or stripped_lower_text.startswith('published:') or stripped_lower_text.startswith('credits:') or stripped_lower_text.startswith('acknowledgements:') or stripped_lower_text.startswith('related products') or stripped_lower_text.startswith('share') or stripped_lower_text == 'plain text') and len(stripped_lower_text) < 120) or any(unwanted_class in combined_classes for unwanted_class in unwanted_classes) or combined_classes == 'date':
                                 if 'post-footer' in combined_classes:
                                     content_finished = True
                                 child.decompose()
 
-                    content_finished = Parser._decompose_non_relevant_elements(child, include_images, content_finished)
+                    content_finished = Parser._filter_elements(child, include_images, content_finished)
 
         return content_finished
 
@@ -836,6 +838,7 @@ class Parser:
                     else:
                         image_url = None
                     if image_url:
+                        image_url = image_url.replace('\n', '')
                         image_count += 1
                         image_alt_text = child.get('alt', '')
                         if image_alt_text:
@@ -856,7 +859,7 @@ class Parser:
                     if caption_text:
                         if caption_text[-1] not in {'.', ',', ':', ';', '?', '!'}:
                             caption_text += '.'
-                        caption_text = re.sub(r'^(?:Figure|Illustration) \d+\.?\s', '', caption_text)
+                        caption_text = re.sub(r'^(?:Figure|Illustration) \d+[.:]?\s', '', caption_text)
                         text += f'{caption_text}\n'
                         if child.name in {'figcaption', 'i'}:
                             text += '\n'
@@ -877,7 +880,7 @@ class Parser:
                         previous_li_element = previous_element if previous_element and previous_element.parent == element else None
                         next_element = Parser._get_next_outer_element(child, {'div'})
                         next_li_element = next_element if next_element and next_element.parent == element else None
-                        if element.name == 'p' or (element.name == 'li' and (isinstance(previous_li_element, NavigableString) or isinstance(next_li_element, NavigableString) or (isinstance(previous_li_element, Tag) and (previous_li_element.name == 'code')) or (isinstance(next_li_element, Tag) and (next_li_element.name == 'code')))):
+                        if element.name == 'p' or (element.name in {'li', 'a', 'td'} and (isinstance(previous_li_element, NavigableString) or isinstance(next_li_element, NavigableString) or (isinstance(previous_li_element, Tag) and (previous_li_element.name == 'code')) or (isinstance(next_li_element, Tag) and (next_li_element.name == 'code')))):
                             text += f'`{code_text}`'
                         else:
                             code_text = Parser._handle_code_text(code_text)
@@ -894,7 +897,10 @@ class Parser:
                 elif child.name == 'table':
                     table_text, image_count, list_level = Parser._parse_table_element(child, image_count, list_level)
                     if table_text:
-                        text += f'{table_text}\n\n'
+                        text += f'{table_text}\n'
+                    next_element = Parser._get_next_outer_element(child, {'div'})
+                    if isinstance(next_element, Tag) and next_element.name != 'hr':
+                        text += '\n'
                 elif child.name == 'footer':
                     recursive_text, image_count, list_level = Parser._parse_element(child, image_count, list_level, inside_hr)
                     if recursive_text:
@@ -905,7 +911,7 @@ class Parser:
                     if recursive_text:
                         text += recursive_text
                         next_element = Parser._get_next_outer_element(child, {'div'})
-                        if isinstance(next_element, Tag) and next_element.name in {'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'dl', 'table', 'code', 'blockquote'}:
+                        if isinstance(next_element, Tag) and next_element.name in {'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'dl', 'table', 'blockquote'}:
                             text += '\n\n'
 
         return text, image_count, list_level
@@ -967,13 +973,15 @@ class Parser:
     def parse_html(html: str, include_images: bool = True) -> tuple[str, int]:
         soup = BeautifulSoup(html, 'html.parser')
 
+        logging.info('\t\t\tCleaning HTML')
+        Parser._clean_soup(soup)
         logging.info('\t\t\tFixing HTML structure')
         Parser._fix_structure(soup)
-        logging.info('\t\t\tDecomposing non-relevant HTML elements')
-        Parser._decompose_non_relevant_elements(soup, include_images)
+        logging.info('\t\t\tFiltering HTML elements')
+        Parser._filter_elements(soup, include_images)
         logging.info('\t\t\tParsing HTML')
         markdown, image_count, _ = Parser._parse_element(soup)
-        logging.info('\t\t\tRefining markdown')
+        logging.info('\t\t\tRefining Markdown')
         markdown = Parser._refine_markdown(markdown)
 
         # TODO: Handle cases where the last paragraph of the OSCTI is not relevant (e.g. an advertisement or a footer)

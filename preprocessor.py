@@ -13,28 +13,54 @@ class Preprocessor:
         self.image_analyzer = image_analyzer if image_analyzer else ImageAnalyzer()
 
     @staticmethod
-    def _split_to_paragraphs(markdown: str) -> List[str]:
+    def _split_to_paragraphs(markdown: str) -> List[Tuple[str, int]]:
         lines = markdown.split('\n')
-        initial_paragraphs_and_levels = []
+        paragraphs_and_levels = []
         inside_paragraph = False
         current_paragraph_content = ""
 
         for line in lines:
             if line.startswith('#'):
                 if current_paragraph_content:
-                    initial_paragraphs_and_levels.append((current_paragraph_content.strip(), len(current_paragraph_content.split(' ')[0])))
+                    paragraphs_and_levels.append((current_paragraph_content.strip(), len(current_paragraph_content.split(' ')[0])))
                     current_paragraph_content = ""
                 inside_paragraph = True
             if inside_paragraph:
                 current_paragraph_content += line + "\n"
 
         if current_paragraph_content:
-            initial_paragraphs_and_levels.append((current_paragraph_content.strip(), len(current_paragraph_content.split(' ')[0])))
+            paragraphs_and_levels.append((current_paragraph_content.strip(), len(current_paragraph_content.split(' ')[0])))
 
+        return paragraphs_and_levels
+
+    @staticmethod
+    def _filter_attack_cases(markdown: str, paragraphs_and_levels: List[Tuple[str, int]]) -> Tuple[str, List[Tuple[str, int]]]:
+        paragraph_indexes_to_remove = []
+        i = 0
+        while i < len(paragraphs_and_levels):
+            paragraph, level = paragraphs_and_levels[i]
+            if re.match(r'^#+\s(attack\s)?(case|story)\s[2-9]:\s', paragraph, re.IGNORECASE):
+                paragraph_indexes_to_remove.append(i)
+                j = i + 1
+                while j < len(paragraphs_and_levels) and paragraphs_and_levels[j][1] > level:
+                    paragraph_indexes_to_remove.append(j)
+                    j += 1
+                i = j
+            else:
+                i += 1
+
+        for paragraph_index in reversed(paragraph_indexes_to_remove):
+            markdown = markdown.replace('\n\n' + paragraphs_and_levels[paragraph_index][0], '')
+            del paragraphs_and_levels[paragraph_index]
+
+        return markdown, paragraphs_and_levels
+
+    @staticmethod
+    def _enhance_paragraphs(paragraphs_and_levels: List[Tuple[str, int]]) -> List[str]:
         paragraphs = []
-        for i, (paragraph, level) in enumerate(initial_paragraphs_and_levels):
+        for i, (paragraph, level) in enumerate(paragraphs_and_levels):
             current_level = level
-            for prev_paragraph, prev_level in reversed(initial_paragraphs_and_levels[:i]):
+            for prev_paragraph, prev_level in reversed(paragraphs_and_levels[:i]):
                 if prev_level < current_level:
                     paragraph = prev_paragraph.split('\n')[0] + "\n\n" + paragraph
                     current_level = prev_level
@@ -92,7 +118,11 @@ class Preprocessor:
             markdown, image_count = Parser.parse_html(html, include_images)
             if markdown:
                 logging.info(f'\t\tSplitting Markdown to paragraphs')
-                paragraphs = Preprocessor._split_to_paragraphs(markdown)
+                paragraphs_and_levels = Preprocessor._split_to_paragraphs(markdown)
+                logging.info(f'\t\tFiltering attack cases')
+                markdown, paragraphs_and_levels = Preprocessor._filter_attack_cases(markdown, paragraphs_and_levels)
+                logging.info(f'\t\tEnhancing paragraphs with parent headings')
+                paragraphs = Preprocessor._enhance_paragraphs(paragraphs_and_levels)
                 if include_images:
                     logging.info(f'\t\tAnalyzing images')
                     markdown, paragraphs = self._analyze_images(markdown, paragraphs)
@@ -107,6 +137,6 @@ class Preprocessor:
 if __name__ == '__main__':
     from dotenv import load_dotenv
     load_dotenv()
-    url = 'https://expel.com/blog/finding-evil-in-aws/'
+    url = 'https://www.lacework.com/blog/detecting-ai-resource-hijacking-with-composite-alerts'
     markdown, _ = Preprocessor().preprocess_oscti(url, include_images=True, return_image_count=False)
     print(markdown)

@@ -45,40 +45,6 @@ After we confirmed the findings, we had a call with the customer to discuss the 
 What were the IAM permissions the federated user had, which prevented the set of actions the threat actor attempted?
 The answer did not actually involve the absolute minimal set of permissions required by the user to do their job. It’s simply that the federated user had a role that didn’t have an Allow statement for the IAM actions the threat actor tried — their job did not require them. Without an explicit Allow statement, the IAM actions attempted were denied because IAM policies are Deny by default. In this instance, simply not having the desired IAM permissions meant that the threat actor wasn’t able to achieve their goal, and stopped using the access. We’ll never know what their goal actually was, but trying to create access keys, passwords, and update policies means that a fair guess would be that they were attempting to create another way to access that AWS account.
 
-## Story 2: More instances for crypto mining
-
-In this AWS CIRT story, we see how a threat actor’s inability to create additional Amazon Elastic Compute Cloud (Amazon EC2) instances resulted in the threat actor leaving without achieving their goal.
-
-### Background and AWS CIRT engagement
-
-Our second story involves a customer who had an AWS account they were using to test some new third-party software that uses Amazon Elastic Container Service (Amazon ECS). This customer had Amazon GuardDuty turned on, and found that they were getting GuardDuty alerts for CryptoCurrency:EC2/BitcoinTool related findings.
-Because this account was new and currently only used for testing their software, the customer saw that the detection was related to the Amazon ECS cluster and decided to delete all the resources in the account and rebuild. Not too long after doing this, they received a similar GuardDuty alert for the new Amazon ECS cluster they had set up. The second finding resulted in the customer’s security team and AWS being brought in to try to understand what was causing this. The customer’s security team was focused on reviewing the tasks that were being run on the cluster, while AWS CIRT reviewed the AWS account actions and provided insight about the GuardDuty finding and what could have caused it.
-
-### Analysis and findings
-
-Working with the customer, it wasn’t long before we discovered that the 3rd party Amazon ECS task definition that the customer was using, was unintentionally exposing a web interface to the internet. That interface allowed unauthenticated users to run commands on the system. This explained why the same alert was also received shortly after the new install had been completed.
-This is where the story takes a turn for the better. The AWS CIRT analysis of the AWS CloudTrail logs found that there were a number of attempts to use the credentials of the Task IAM role that was associated with the Amazon ECS task. The majority of actions were attempting to launch multiple Amazon EC2 instances via RunInstances calls. Every one of these actions, along with the other actions attempted, failed with either a Client.UnauthorizedOperation or an AccessDenied error message.
-Next, we worked with the customer to understand the permissions provided by the Task IAM role. Once again, the permissions could have been limited more tightly. However, this time the goal of the threat actor — running a number of Amazon EC2 instances (most likely for surreptitious crypto mining) — did not align with the policy given to the role:
-
-```
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": "s3:*",
-      "Resource": "*"
-    }
-  ]
-}
-```
-
-AWS CIRT recommended creating policies to restrict the allowed actions further, providing specific resources where possible, and potentially also adding in some conditions to limit other aspects of the access (such as the two Condition keys launched recently to limit where Amazon EC2 instance credentials can be used from). However, simply having the policy limit access to Amazon Simple Storage Service (Amazon S3) meant that the threat actor decided to leave with just the one Amazon ECS task running crypto mining rather than a larger number of Amazon EC2 instances.
-
-### Customer communication and result
-
-After reporting these findings to the customer, there were two clear next steps: First, remove the now unwanted and untrusted Amazon ECS resource from their AWS account. Second, review and re-architect the Amazon ECS task so that access to the web interface was only provided to appropriate users. As part of that re-architecting, an Amazon S3 policy similar to “Allows read and write access to objects in an S3 bucket” was recommended. This separates Amazon S3 bucket actions from Amazon S3 object actions. When applications have a need to read and write objects in Amazon S3, they don’t normally have a need to create or delete entire buckets (or versioning on those buckets).
-
 ## Some tools to help
 
 We’ve just looked at how limiting privileges helped during two different security events. Now, let’s consider what can help you decide how to reduce your IAM permissions to an appropriate level. There are a number of resources that talk about different approaches:

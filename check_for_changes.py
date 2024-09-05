@@ -16,7 +16,12 @@ ground_truth = {'https://permiso.io/blog/s/anatomy-of-attack-exposed-keys-to-cry
                 'https://permiso.io/blog/lucr-3-scattered-spider-getting-saas-y-in-the-cloud/': 'lucr_3_scattered_spider_getting_saas_y_in_the_cloud.txt',
                 'https://aws.amazon.com/blogs/security/two-real-life-examples-of-why-limiting-permissions-works-lessons-from-aws-cirt/': 'two_real_life_examples_of_why_limiting_permissions_works_lessons_from_aws_cirt.txt',
                 'https://permiso.io/blog/s/unmasking-guivil-new-cloud-threat-actor/': 'unmasking_guivil_new_cloud_threat_actor.txt',
-                'https://unit42.paloaltonetworks.com/sugarcrm-cloud-incident-black-hat/': 'sugarcrm_cloud_incident_black_hat.txt'}
+                'https://unit42.paloaltonetworks.com/sugarcrm-cloud-incident-black-hat/': 'sugarcrm_cloud_incident_black_hat.txt',
+                'https://expel.com/blog/finding-evil-in-aws/': 'finding-evil-in-aws.txt',
+                'https://securitylabs.datadoghq.com/articles/tales-from-the-cloud-trenches-ecs-crypto-mining/': 'tales-from-the-cloud-trenches-ecs-crypto-mining.txt',
+                'https://www.invictus-ir.com/news/the-curious-case-of-dangerdev-protonmail-me': 'the-curious-case-of-dangerdev-protonmail-me.txt',
+                'https://securitylabs.datadoghq.com/articles/tales-from-the-cloud-trenches-raiding-for-vaults-buckets-secrets/': 'tales-from-the-cloud-trenches-raiding-for-vaults-buckets-secrets.txt',
+                'https://securitylabs.datadoghq.com/articles/tales-from-the-cloud-trenches-aws-activity-to-phishing/': 'tales-from-the-cloud-trenches-aws-activity-to-phishing.txt'}
 
 for url in list(ground_truth.keys()):
     with open(f'ground_truth/markdowns/{ground_truth[url]}', 'r', encoding="utf8") as f:
@@ -29,6 +34,8 @@ preprocessor = Preprocessor()
 def check_url(url):
     html = Downloader.fetch_website(url)
     markdown, _ = Parser.parse_html(html)
+    paragraphs_and_levels = Preprocessor._split_to_paragraphs(markdown)
+    markdown, _ = Preprocessor._filter_attack_cases(markdown, paragraphs_and_levels)
     result = "OK" if markdown == ground_truth[url] else "FAIL"
     return f'{url}: {result}'
 

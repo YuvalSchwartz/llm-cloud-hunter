@@ -49,16 +49,30 @@ class Downloader:
                 last_page_source = current_page_source
 
             logging.info('\t\t\tExtracting relevant element')
-            relevant_element = driver
-            bodies = relevant_element.find_elements(By.TAG_NAME, 'body')
-            if bodies:
-                relevant_element = bodies[0]
+            relevant_element = driver.find_element(By.TAG_NAME, 'body')
+            body_navless_headers = [header for header in relevant_element.find_elements(By.TAG_NAME, 'header') if not header.find_elements(By.TAG_NAME, 'nav')]
+            body_navs = relevant_element.find_elements(By.TAG_NAME, 'nav')
+            header = body_navless_headers[0] if body_navless_headers else None
             mains = relevant_element.find_elements(By.TAG_NAME, 'main')
             if mains:
                 relevant_element = mains[0]
             articles = relevant_element.find_elements(By.TAG_NAME, 'article')
             if articles:
                 relevant_element = articles[0]
+            prefix_navs = [nav for nav in body_navs if nav not in relevant_element.find_elements(By.XPATH, 'nav')]
+            relevant_navless_headers = {header for header in relevant_element.find_elements(By.TAG_NAME, 'header') if not header.find_elements(By.TAG_NAME, 'nav')}
+
+            # relevant_element_elements = relevant_element.find_elements(By.XPATH, './/*')
+            # prefix_elements = set()
+            # for element in body_elements:
+            #     if element not in relevant_element_elements:
+            #         prefix_elements.add(element)
+            #     else:
+            #         break
+            # header_prefix_elements = [header for header in body_non_nav_headers if header in prefix_elements]
+            # relevant_element_header_elements = [header for header in relevant_element.find_elements(By.TAG_NAME, 'header') if not header.find_elements(By.TAG_NAME, 'nav')]
+            # print(f'url: {url}\nnumber of prefix headers: {len(header_prefix_elements)}\nnumber of relevant headers: {len(relevant_element_header_elements)}\n\n')
+
 
             # logging.info('\t\t\tFiltering images and fixing source URLs')
             # for image in relevant_element.find_elements(By.TAG_NAME, 'img'):
@@ -83,7 +97,10 @@ class Downloader:
             #         relevant_element.execute_script("arguments[0].removeAttribute('data-lazy-srcset');", image)
             #         relevant_element.execute_script("arguments[0].removeAttribute('data-lazyload-srcset');", image)
 
-            html = relevant_element.get_attribute('outerHTML')
+            if prefix_navs and header and header not in relevant_navless_headers:
+                html = header.get_attribute('outerHTML') + relevant_element.get_attribute('outerHTML')
+            else:
+                html = relevant_element.get_attribute('outerHTML')
         except WebDriverException:
             logging.error('\t\t\tFailed to fetch website')
             return None
