@@ -1,49 +1,42 @@
 # Two real-life examples of why limiting permissions works: Lessons from AWS CIRT
 
-by Richard Billington | on 31 AUG 2023 | in Best Practices, Intermediate (200), Security, Identity, & Compliance
-
-Welcome to another blog post from the AWS Customer Incident Response Team (CIRT)! For this post, we’re looking at two events that the team was involved in from the viewpoint of a regularly discussed but sometimes misunderstood subject, least privilege. Specifically, we consider the idea that the benefit of reducing permissions in real-life use cases does not always require using the absolute minimum set of privileges. Instead, you need to weigh the cost and effort of creating and maintaining privileges against the risk reduction that is achieved, to make sure that your permissions are appropriate for your needs.
+Welcome to another blog post from the AWS Customer Incident Response Team (CIRT)! For this post, we’re looking at two events that the team was involved in from the viewpoint of a regularly discussed but sometimes misunderstood subject, 'least privilege'. Specifically, we consider the idea that the benefit of reducing permissions in real-life use cases does not always require using the absolute minimum set of privileges. Instead, you need to weigh the cost and effort of creating and maintaining privileges against the risk reduction that is achieved, to make sure that your permissions are appropriate for your needs.
 To quote VP and Distinguished Engineer at Amazon Security, Eric Brandwine, “Least privilege equals maximum effort”. This is the idea that creating and maintaining the smallest possible set of privileges needed to perform a given task will require the largest amount of effort, especially as customer needs and service features change over time. However, the correlation between effort and permission reduction is not linear. So, the question you should be asking is: How do you balance the effort of privilege reduction with the benefits it provides?
 Unfortunately, this is not an easy question to answer. You need to consider the likelihood of an unwanted issue happening, the impact if that issue did happen, and the cost and effort to prevent (or detect and recover from) that issue. You also need to factor requirements such as your business goals and regulatory requirements into your decision process. Of course, you won’t need to consider just one potential issue, but many. Often it can be useful to start with a rough set of permissions and refine them down as you develop your knowledge of what security level is required. You can also use service control policies (SCPs) to provide a set of permission guardrails if you’re using AWS Organizations. In this post, we tell two real-world stories where limiting AWS Identity and Access Management (IAM) permissions worked by limiting the impact of a security event, but where the permission set did not involve maximum effort.
 
-## Story 1: On the hunt for credentials
+## Story 2: More instances for crypto mining
 
-In this AWS CIRT story, we see how a threat actor was unable to achieve their goal because the access they obtained — a database administrator’s — did not have the IAM permissions they were after.
+In this AWS CIRT story, we see how a threat actor’s inability to create additional Amazon Elastic Compute Cloud (Amazon EC2) instances resulted in the threat actor leaving without achieving their goal.
 
 ### Background and AWS CIRT engagement
 
-A customer came to us after they discovered unauthorized activity in their on-premises systems and in some of their AWS accounts. They had incident response capability and were looking for an additional set of hands with AWS knowledge to help them with their investigation. This helped to free up the customer’s staff to focus on the on-premises analysis.
-Before our engagement, the customer had already performed initial containment activities. This included rotating credentials, revoking temporary credentials, and isolating impacted systems. They also had a good idea of which federated user accounts had been accessed by the threat actor.
-The key part of every AWS CIRT engagement is the customer’s ask. Everything our team does falls on the customer side of the AWS Shared Responsibility Model, so we want to make sure that we are aligned to the customer’s desired outcome. The ask was clear—review the potential unauthorized federated users’ access, and investigate the unwanted AWS actions that were taken by those users during the known timeframe. To get a better idea of what was “unwanted”, we talked to the customer to understand at a high level what a typical day would entail for these users, to get some context around what sort of actions would be expected. The users were primarily focused on working with Amazon Relational Database Service (RDS).
+Our second story involves a customer who had an AWS account they were using to test some new third-party software that uses Amazon Elastic Container Service (Amazon ECS). This customer had Amazon GuardDuty turned on, and found that they were getting GuardDuty alerts for CryptoCurrency:EC2/BitcoinTool related findings.
+Because this account was new and currently only used for testing their software, the customer saw that the detection was related to the Amazon ECS cluster and decided to delete all the resources in the account and rebuild. Not too long after doing this, they received a similar GuardDuty alert for the new Amazon ECS cluster they had set up. The second finding resulted in the customer’s security team and AWS being brought in to try to understand what was causing this. The customer’s security team was focused on reviewing the tasks that were being run on the cluster, while AWS CIRT reviewed the AWS account actions and provided insight about the GuardDuty finding and what could have caused it.
 
 ### Analysis and findings
 
-For this part of the story, we’ll focus on a single federated user whose apparent actions we investigated, because the other federated users had not been impersonated by the threat actor in a meaningful way. We knew the approximate start and end dates to focus on and had discovered that the threat actor had performed a number of unwanted actions.
-After reviewing the actions, it was clear that the threat actor had performed a console sign-in on three separate occasions within a 2-hour window. Each time, the threat actor attempted to perform a subset of the following actions:
-
-- CreateAccessKey — Create a new AWS secret access key
-- CreateLoginProfile — Create a console password for a given IAM user
-- UpdateAccessKey — Change an access key from inactive to active (or vice versa)
-- DeleteAccessKey — Delete an access key pair
-- PutRolePolicy — Add or update an inline IAM policy
-- CreatePolicyVersion — Create a new version of an existing managed policy
-
-> Note: This list includes only the actions that are displayed as readOnly = false in AWS CloudTrail, because these actions are often (but not always) the more impactful ones, with the potential to change the AWS environment.
-
-This is the point where the benefit of permission restriction became clear. As soon as this list was compiled, we noticed that two fields were present for all of the actions listed:
+Working with the customer, it wasn’t long before we discovered that the 3rd party Amazon ECS task definition that the customer was using, was unintentionally exposing a web interface to the internet. That interface allowed unauthenticated users to run commands on the system. This explained why the same alert was also received shortly after the new install had been completed.
+This is where the story takes a turn for the better. The AWS CIRT analysis of the AWS CloudTrail logs found that there were a number of attempts to use the credentials of the Task IAM role that was associated with the Amazon ECS task. The majority of actions were attempting to launch multiple Amazon EC2 instances via RunInstances calls. Every one of these actions, along with the other actions attempted, failed with either a Client.UnauthorizedOperation or an AccessDenied error message.
+Next, we worked with the customer to understand the permissions provided by the Task IAM role. Once again, the permissions could have been limited more tightly. However, this time the goal of the threat actor — running a number of Amazon EC2 instances (most likely for surreptitious crypto mining) — did not align with the policy given to the role:
 
 ```
-"errorCode": "Client.UnauthorizedOperation",
-"errorMessage": "You are not authorized to perform this operation. [rest of message]"
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "s3:*",
+      "Resource": "*"
+    }
+  ]
+}
 ```
 
-As this reveals, every single non-readOnly action that was attempted by the threat actor was denied because the federated user account did not have the required IAM permissions.
+AWS CIRT recommended creating policies to restrict the allowed actions further, providing specific resources where possible, and potentially also adding in some conditions to limit other aspects of the access (such as the two Condition keys launched recently to limit where Amazon EC2 instance credentials can be used from). However, simply having the policy limit access to Amazon Simple Storage Service (Amazon S3) meant that the threat actor decided to leave with just the one Amazon ECS task running crypto mining rather than a larger number of Amazon EC2 instances.
 
 ### Customer communication and result
 
-After we confirmed the findings, we had a call with the customer to discuss the results. As you can imagine, they were happy that the results showed no material impact to their data, and said no further investigation or actions were required at that time.
-What were the IAM permissions the federated user had, which prevented the set of actions the threat actor attempted?
-The answer did not actually involve the absolute minimal set of permissions required by the user to do their job. It’s simply that the federated user had a role that didn’t have an Allow statement for the IAM actions the threat actor tried — their job did not require them. Without an explicit Allow statement, the IAM actions attempted were denied because IAM policies are Deny by default. In this instance, simply not having the desired IAM permissions meant that the threat actor wasn’t able to achieve their goal, and stopped using the access. We’ll never know what their goal actually was, but trying to create access keys, passwords, and update policies means that a fair guess would be that they were attempting to create another way to access that AWS account.
+After reporting these findings to the customer, there were two clear next steps: First, remove the now unwanted and untrusted Amazon ECS resource from their AWS account. Second, review and re-architect the Amazon ECS task so that access to the web interface was only provided to appropriate users. As part of that re-architecting, an Amazon S3 policy similar to “Allows read and write access to objects in an S3 bucket” was recommended. This separates Amazon S3 bucket actions from Amazon S3 object actions. When applications have a need to read and write objects in Amazon S3, they don’t normally have a need to create or delete entire buckets (or versioning on those buckets).
 
 ## Some tools to help
 

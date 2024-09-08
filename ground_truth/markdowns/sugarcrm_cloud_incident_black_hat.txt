@@ -46,7 +46,7 @@ In the cases we observed, these plain-text credentials existed on the compromise
 
 [Image Info:
 - Alt Text: Image 1 is two lines of code. These are the file paths for credentials in AWS.
-- Caption: File paths for credentials file location.
+- Caption: Figure 1. File paths for credentials file location.
 https://unit42.paloaltonetworks.com/wp-content/uploads/2023/08/word-image-129566-1-2.png]
 
 ### Discovery
@@ -55,7 +55,7 @@ Before the threat actors performed any scanning activity, they first ran the com
 
 [Image Info:
 - Alt Text: Image 2 is a screenshot of the response to GetCallerIdentity. It is three lines in total, and includes the user ID, the account, and the ARN. An ARN is the acronym for the Amazon Resource Name.
-- Caption: Example GetCallerIdentity response.
+- Caption: Figure 2. Example GetCallerIdentity response.
 https://unit42.paloaltonetworks.com/wp-content/uploads/2023/08/word-image-129566-2-2.png]
 
 Once the threat actor knew a little more about the credentials they compromised, they began their scanning activities. They utilized the tools Pacu and Scout Suite to gain a better understanding of what resources existed within the AWS account. Pacu is an open-source AWS exploitation framework, and it is designed to be the Metasploit equivalent in the cloud. Scout Suite is a security auditing tool used for security posture assessments of cloud environments.
@@ -79,12 +79,12 @@ On the other hand, if there is very little spending in an account, a couple new 
 
 [Image Info:
 - Alt Text: Image 3 is a screenshot of the request parameters for GetCostandUsage. It includes the time period with start and end dates; the granularity, which is monthly; and the metrics, which include the blended cost, unblended cost, and usage quantity.
-- Caption: Example GetCostandUsage request parameters.
+- Caption: Figure 3. Example GetCostandUsage request parameters.
 https://unit42.paloaltonetworks.com/wp-content/uploads/2023/08/word-image-129566-3-2.png]
 
 [Image Info:
 - Alt Text: Image 4 is a screenshot of the GetCostandUsage response. It includes results by time including the time period with start and end dates; the totals for blended cost with amount and unit; usage quantity with amount and unit; unblended cost with amount and unit, and estimated groups.
-- Caption: Example GetCostandUsage response.
+- Caption: Figure 4. Example GetCostandUsage response.
 https://unit42.paloaltonetworks.com/wp-content/uploads/2023/08/word-image-129566-4-2.png]
 
 Both the Organizations and Cost and Usage API calls are great examples of how the attack surface is different in the cloud. By using these innocuous looking API calls, threat actors gained a ton of information about the account structure and usage without performing a lot of suspicious activity that might trigger an alert.
@@ -101,7 +101,7 @@ After the RDS activity, the threat actors again moved laterally back to the EC2 
 
 [Image Info:
 - Alt Text: Image 5 is a screenshot of an example security group, allowing port 22 access.
-- Caption: Example security group allowing port 22 access.
+- Caption: Figure 5. Example security group allowing port 22 access.
 https://unit42.paloaltonetworks.com/wp-content/uploads/2023/08/word-image-129566-5-2.png]
 
 The threat actors created EC2 instances in the same regions that the organizations used for the rest of their normal infrastructure. They also switched regions to a geographically new area, and created a new security group that allowed port 22 SSH traffic from any IP address. The threat actors then imported another key pair. Since the threat actors switched to a different region, the key pair had to be reimported even if it was the same key pair used in other regions.
@@ -113,7 +113,7 @@ For the privilege escalation portion of these attacks, the threat actors did not
 
 [Image Info:
 - Alt Text: Image 6 is a screenshot of many lines of code. It is an example of a failed Root login from the CloudTrail logs.
-- Caption: Example failed Root login from CloudTrail logs.
+- Caption: Figure 6. Example failed Root login from CloudTrail logs.
 https://unit42.paloaltonetworks.com/wp-content/uploads/2023/08/word-image-129566-6-2.png]
 
 ### Persistence – Regions
@@ -123,7 +123,7 @@ Beyond attempting to log in with the Root account, the threat actors did not try
 ### Defense Evasion
 
 Once a threat actor compromises an AWS account, they have a finite amount of time before the account owners detect that they have an issue. In order to stay under the radar, the threat actors deployed resources in non-standard regions. However, they also turned the EC2 instances on and off throughout their time in the environments.
-There are a couple of reasons why a threat actor might choose to do this. The first reason is to decrease their visibility. On the EC2 instance page in the AWS console, it defaults to showing only running EC2 instances. Unless a user is actively trying to review non-running EC2 instances, at an initial glance, the new EC2 instances created by the threat actors would be missed once they are placed in a stopped state.
+There are a couple of reasons why a threat actor might choose to do this. The first reason is to decrease their visibility. On the EC2 instance page in the AWS console, it defaults to showing only 'running' EC2 instances. Unless a user is actively trying to review non-running EC2 instances, at an initial glance, the new EC2 instances created by the threat actors would be missed once they are placed in a stopped state.
 The second reason they might choose to do this is that stopping these resources also avoids incurring extra costs in the organization’s account. If the organizations have tight notifications around costs, threat actors stopping the resources they created minimizes costs and helps prevent triggering a cost alert, which is another way they could evade defenses.
 Other than creating resources in different regions and stopping the resources they created, the threat actors did not attempt other defense evasion techniques such as stopping CloudTrail logging or disabling GuardDuty.
 
@@ -144,7 +144,7 @@ It might be easier to write overly permissive policies, but it is certainly wort
 
 ### Monitoring Root
 
-Another remediation step we recommend to these organizations is to set up monitoring around the Root account. This account should only be used in an environment for a couple account management tasks that require Root, which maintains this as a high-fidelity alert to help secure the most valuable account. We also recommend always enabling multifactor authentication on Root and making sure it is protected with a long password.
+Another remediation step we recommend to these organizations is to set up monitoring around the Root account. This account should only be used in an environment for a couple account management tasks that 'require' Root, which maintains this as a high-fidelity alert to help secure the most valuable account. We also recommend always enabling multifactor authentication on Root and making sure it is protected with a long password.
 
 ### Logging and Monitoring
 

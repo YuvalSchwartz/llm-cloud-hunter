@@ -62,18 +62,6 @@ class Downloader:
             prefix_navs = [nav for nav in body_navs if nav not in relevant_element.find_elements(By.XPATH, 'nav')]
             relevant_navless_headers = {header for header in relevant_element.find_elements(By.TAG_NAME, 'header') if not header.find_elements(By.TAG_NAME, 'nav')}
 
-            # relevant_element_elements = relevant_element.find_elements(By.XPATH, './/*')
-            # prefix_elements = set()
-            # for element in body_elements:
-            #     if element not in relevant_element_elements:
-            #         prefix_elements.add(element)
-            #     else:
-            #         break
-            # header_prefix_elements = [header for header in body_non_nav_headers if header in prefix_elements]
-            # relevant_element_header_elements = [header for header in relevant_element.find_elements(By.TAG_NAME, 'header') if not header.find_elements(By.TAG_NAME, 'nav')]
-            # print(f'url: {url}\nnumber of prefix headers: {len(header_prefix_elements)}\nnumber of relevant headers: {len(relevant_element_header_elements)}\n\n')
-
-
             # logging.info('\t\t\tFiltering images and fixing source URLs')
             # for image in relevant_element.find_elements(By.TAG_NAME, 'img'):
             #     # Check if image is smaller than 150x150 pixels

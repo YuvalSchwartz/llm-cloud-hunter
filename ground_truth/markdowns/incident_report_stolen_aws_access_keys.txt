@@ -11,7 +11,7 @@ We’ll walk through the entire incident step-by-step to highlight not only what
 
 ## Initial lead and detection
 
-The initial alert lead indicated authentication with a suspicious user agent. The alert messageーObserved Hacking Tool User agent – Kali Linux ーsuggested that the user employed the Kali Linux operating system. Weird.
+The initial alert lead indicated authentication with a suspicious user agent. The alert messageーObserved Hacking Tool User agent – Kali Linuxーsuggested that the user employed the Kali Linux operating system. Weird.
 A closer look at the user agent in question revealed that it was more specifically aws-cli/1.22.34 Python/3.9.11 Linux/5.15.0-kali3-amd64 botocore/1.27.84.
 
 [Image Info:
@@ -52,7 +52,7 @@ Some Googling revealed that GetSendQuota was an Amazon email service feature tha
 [Image Info:
 https://expel.com/wp-content/uploads/2023/01/5-aws-stolen-keys.png]
 
-Taking the access_key_id for the initial lead, we looked up what else it did. Most of that user’s activity was Amazon SES-related (around 95%) and we were able to find other events that stuck out as unusual. “UpdateAccountSendingEnabled”, specifically, seemed interesting, as it was called several times (but not excessively, and it seemed to toggle a useful service on or off). Documentation indicated that it “enables or disables email sending across your entire Amazon SES account in the current AWS region.”.
+Taking the access_key_id for the initial lead, we looked up what else it did. Most of that user’s activity was Amazon SES-related (around 95%) and we were able to find other events that stuck out as unusual. “UpdateAccountSendingEnabled”, specifically, seemed interesting, as it was called several times (but not excessively, and it seemed to toggle a useful service on or off). Documentation indicated that it “enables or disables email sending across your entire Amazon SES account in the current AWS region”.
 Isolating this event type in the whole environment confirmed that only six users ever employed this event type. All six overlapped with the group of users from the previous query.
 
 [Image Info:

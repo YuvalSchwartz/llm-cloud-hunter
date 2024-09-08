@@ -13,7 +13,7 @@ In this post, we’ll walk you through how we caught the problem, what we observ
 ## Compromised AWS access keys: How we caught ‘em
 
 We first determined there was something amiss thanks to an Expel detection using CloudTrail logs. Here at Expel, we encourage many of our customers who run on AWS to use Amazon GuardDuty. But we’ve also taken it upon ourselves to develop detection use cases against CloudTrail logs. GuardDuty does a great job of identifying common attacks, and we’ve also found CloudTrail logs to be a great source of signal for additional alerting that’s more specific to an AWS service or an environment.
-It all started with the alert below, telling us that EC2 SSH access keys were being generated (CreateKeyPair / ImportKeyPair) from a suspicious source IP address.
+It all started with the alert below, telling us that EC2 SSH access keys were being generated (CreateKeyPair/ImportKeyPair) from a suspicious source IP address.
 
 [Image Info:
 - Caption: Initial lead Expel alert.

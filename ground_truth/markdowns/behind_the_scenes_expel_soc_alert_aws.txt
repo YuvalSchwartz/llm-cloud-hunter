@@ -6,7 +6,7 @@ https://expel.com/wp-content/uploads/2015-2020/2020/07/hero-1100x244-Behind-the-
 TAGS: Cloud security / How to / Managed security / MDR / SOC
 
 Over the July 4th holiday weekend our SOC spotted a coin-mining attack in a customer’s Amazon Web Services (AWS) environment. The attacker compromised the root IAM user access key and used it to enumerate the environment and spin up ten (10) c5.4xlarge EC2s to mine Monero.
-While this was just a coin miner, it was root key exposure. The situation could have easily gotten out of control pretty quickly. It took our SOC 37 minutes to go from alert-to-fix. That’s 37 minutes to triage the initial lead (a custom AWS rule using CloudTrail logs), declare an incident and tell our customer how to stop the attack.
+While this was 'just' a coin miner, it was root key exposure. The situation could have easily gotten out of control pretty quickly. It took our SOC 37 minutes to go from alert-to-fix. That’s 37 minutes to triage the initial lead (a custom AWS rule using CloudTrail logs), declare an incident and tell our customer how to stop the attack.
 
 ---
 Jon’s take: Alert-to-fix in 37 minutes is quite good. Recent industry reporting indicates that most incidents are contained on a time basis measured in days not minutes. Our target is that 75 percent of the time we go from alert-to-fix in less than 30 minutes. Anything above that automatically goes through a review process that we’ll talk about more in a bit.
@@ -26,7 +26,8 @@ Now we’ll let the team tell the story.
 
 ### Initial Lead: 12:19:37 AM ET
 
-By Sam Lipton and Lori Easterly – SOC analysts.
+_By Sam Lipton and Lori Easterly – SOC analysts_
+
 Our shift started at 08:45 pm ET on Friday, July 3. Like many organizations, we’ve been working fully remotely since the middle of March. We jumped on the Zoom call for shift handoff, reviewed open investigations, weekly alert trending and general info for situational awareness. Things were (seemingly) calm.
 We anticipated a quieter shift. On a typical Friday night into Saturday morning, we’ll handle about 100 alerts. It’s not uncommon for us to spot an incident on Friday evening/Saturday morning, but it’s not the norm. It’s usually slower on the weekend; there are fewer active users and devices.
 Our shift started as we expected, slow and steady. Then suddenly, as is the case in security operations, that all changed.
@@ -85,9 +86,10 @@ Alert-to-fix in 37 minutes. Not a bad start to our shift.
 
 ## Global Response Team enters the chat: 12:42:00 AM ET
 
-By Anthony Randazzo – Global Response Team Lead.
+_By Anthony Randazzo – Global Response Team Lead_
+
 I usually keep my phone on silent, but PagerDuty has a vCard that allows you to set an emergency contact. This bypasses your phone’s notifications setting so that if you receive a call from this contact, your phone rings (whether it’s in silent mode or not).
-We call it the SOC “bat phone.”.
+We call it the SOC “bat phone”.
 This wasn’t the first time I was paged in the middle of the night. I grabbed my phone, saw the PagerDuty icon and answered.
 There’s a lot of trust in our SOC. I knew immediately that if I was being paged, then the shift analysts were confident that there was something brewing that needed my attention.
 I made my way downstairs to my office and hopped on Zoom to get a quick debrief from the analysts about what alerts came in and what they were able to discover through their initial response. Now that I’m finally awake, it’s time to surgically determine the full extent of what happened.
@@ -142,7 +144,7 @@ https://expel.com/wp-content/uploads/2020/07/image-Expel-pager_duty_resolution.p
 
 ## Tuesday, July 7th
 
-By Jon Hencinski – Director of Global Security Operations.
+_By Jon Hencinski – Director of Global Security Operations_
 
 ### Critical incident hot wash: 10:00:00 AM ET
 

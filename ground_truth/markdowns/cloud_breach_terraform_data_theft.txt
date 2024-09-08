@@ -8,7 +8,7 @@ https://sysdig.com/wp-content/uploads/SCARLETEEL-featured.png]
 
 The Sysdig Threat Research Team recently discovered a sophisticated cloud operation in a customer environment, dubbed SCARLETEEL, that resulted in stolen proprietary data. The attacker exploited a containerized workload and then leveraged it to perform privilege escalation into an AWS account in order to steal proprietary software and credentials. They also attempted to pivot using a Terraform state file to other connected AWS accounts to spread their reach throughout the organization.
 This attack was more sophisticated than most, as it started from a compromised Kubernetes container and spread to the victim’s AWS account. The attackers also had knowledge of AWS cloud mechanics, such as Elastic Compute Cloud (EC2) roles, Lambda serverless functions, and Terraform. The end result wasn’t just a typical cryptojacking attack. The attacker had other, more malicious motives: the theft of proprietary software.
-Cyberattacks in the cloud have increased by 56% over the past year. Obtaining persistence in the cloud, exfiltrating sensitive data, and creating new resources such as EC2 instances for use in cryptomining are the most common motives. Such resources can have a serious impact on an organization’s cloud bills. But more espionage-focused motives are also alive and well.The reality is that attackers can use your cloud resources for more than just cryptomining.
+Cyberattacks in the cloud have increased by 56% over the past year. Obtaining persistence in the cloud, exfiltrating sensitive data, and creating new resources such as EC2 instances for use in cryptomining are the most common motives. Such resources can have a serious impact on an organization’s cloud bills. But more espionage-focused motives are also alive and well. The reality is that attackers can use your cloud resources for more than just cryptomining.
 The sophisticated attack we witnessed has many facets that underlie the complexity of securing a cloud-based infrastructure. Vulnerability management alone won’t address everything. Instead, there are a number of tools that can reduce your risk from advanced threats, including virtual machine, cloud security posture management (CSPM), cloud infrastructure entitlement management (CIEM), runtime threat detection, and secrets management.
 
 ## Overview
@@ -149,9 +149,9 @@ As a result of this action, we could not retrieve additional attack evidence. Wh
 ### Credential access – Terraform state files
 
 Terraform is an open source infrastructure as code (IaC) tool used to deploy, change, or create infrastructures in cloud environments.
-In order for Terraform to know which resources are under its control and when to update and destroy them, it uses a state file named terraform.tfstate by default. When Terraform is integrated and automated in continuous integration/continuous delivery (CI/CD) pipelines, the state file needs to be accessible with proper permissions. In particular, the service principal running the pipeline needs to be able to access the storage account container that holds the state file. This makes shared storage like Amazon S3 buckets a perfect candidate to hold the state file.
+In order for Terraform to know which resources are under its control and when to update and destroy them, it uses a state file named 'terraform.tfstate' by default. When Terraform is integrated and automated in continuous integration/continuous delivery (CI/CD) pipelines, the state file needs to be accessible with proper permissions. In particular, the service principal running the pipeline needs to be able to access the storage account container that holds the state file. This makes shared storage like Amazon S3 buckets a perfect candidate to hold the state file.
 However, Terraform state files contain all data in plain text, which may contain secrets. Storing secrets anywhere other than a secure location is never a good idea, and definitely should not be put into source control!
-The attacker was able to list the bucket available and retrieve all of the data. Examining the data with different tools such as Pacu and TruffleHog during the incident investigation, it was possible to find both a clear-text IAM user access key and secret key in the terraform.tfstate file inside of an S3 bucket. Here is a screenshot from TruffleHog.
+The attacker was able to list the bucket available and retrieve all of the data. Examining the data with different tools such as Pacu and TruffleHog during the incident investigation, it was possible to find both a clear-text IAM user access key and secret key in the 'terraform.tfstate' file inside of an S3 bucket. Here is a screenshot from TruffleHog.
 
 [Image Info:
 - Alt Text: Terraform s3 bucket leak credentials
@@ -162,7 +162,7 @@ These IAM credentials are for a second connected AWS account, giving the attacke
 ### Lateral movement – AWS account
 
 With the new credentials acquired, the attacker restarted their enumeration and information-gathering process to determine whether they could gain additional resources from inside this additional compromised account. In addition, CloudTrail recorded suspicious activities in the connected AWS account mentioned above.
-The attacker tried to perform enumeration on different AWS resources in the connected cloud account. Fortunately, the IAM user was very well scoped, so all of the requests failed due to a lack of permissions, leaving just the harmless GetCallerIdentity API, which is permitted by default.
+The attacker tried to perform enumeration on different AWS resources in the connected cloud account. Fortunately, the IAM user was very well scoped, so all of the requests failed due to a lack of permissions, leaving just the harmless 'GetCallerIdentity' API, which is permitted by default.
 
 [Image Info:
 - Alt Text: Lateral movement AWS account

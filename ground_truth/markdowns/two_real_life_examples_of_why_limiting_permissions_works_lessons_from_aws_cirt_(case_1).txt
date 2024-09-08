@@ -1,0 +1,69 @@
+# Two real-life examples of why limiting permissions works: Lessons from AWS CIRT
+
+Welcome to another blog post from the AWS Customer Incident Response Team (CIRT)! For this post, we’re looking at two events that the team was involved in from the viewpoint of a regularly discussed but sometimes misunderstood subject, 'least privilege'. Specifically, we consider the idea that the benefit of reducing permissions in real-life use cases does not always require using the absolute minimum set of privileges. Instead, you need to weigh the cost and effort of creating and maintaining privileges against the risk reduction that is achieved, to make sure that your permissions are appropriate for your needs.
+To quote VP and Distinguished Engineer at Amazon Security, Eric Brandwine, “Least privilege equals maximum effort”. This is the idea that creating and maintaining the smallest possible set of privileges needed to perform a given task will require the largest amount of effort, especially as customer needs and service features change over time. However, the correlation between effort and permission reduction is not linear. So, the question you should be asking is: How do you balance the effort of privilege reduction with the benefits it provides?
+Unfortunately, this is not an easy question to answer. You need to consider the likelihood of an unwanted issue happening, the impact if that issue did happen, and the cost and effort to prevent (or detect and recover from) that issue. You also need to factor requirements such as your business goals and regulatory requirements into your decision process. Of course, you won’t need to consider just one potential issue, but many. Often it can be useful to start with a rough set of permissions and refine them down as you develop your knowledge of what security level is required. You can also use service control policies (SCPs) to provide a set of permission guardrails if you’re using AWS Organizations. In this post, we tell two real-world stories where limiting AWS Identity and Access Management (IAM) permissions worked by limiting the impact of a security event, but where the permission set did not involve maximum effort.
+
+## Story 1: On the hunt for credentials
+
+In this AWS CIRT story, we see how a threat actor was unable to achieve their goal because the access they obtained — a database administrator’s — did not have the IAM permissions they were after.
+
+### Background and AWS CIRT engagement
+
+A customer came to us after they discovered unauthorized activity in their on-premises systems and in some of their AWS accounts. They had incident response capability and were looking for an additional set of hands with AWS knowledge to help them with their investigation. This helped to free up the customer’s staff to focus on the on-premises analysis.
+Before our engagement, the customer had already performed initial containment activities. This included rotating credentials, revoking temporary credentials, and isolating impacted systems. They also had a good idea of which federated user accounts had been accessed by the threat actor.
+The key part of every AWS CIRT engagement is the customer’s ask. Everything our team does falls on the customer side of the AWS Shared Responsibility Model, so we want to make sure that we are aligned to the customer’s desired outcome. The ask was clear—review the potential unauthorized federated users’ access, and investigate the unwanted AWS actions that were taken by those users during the known timeframe. To get a better idea of what was “unwanted”, we talked to the customer to understand at a high level what a typical day would entail for these users, to get some context around what sort of actions would be expected. The users were primarily focused on working with Amazon Relational Database Service (RDS).
+
+### Analysis and findings
+
+For this part of the story, we’ll focus on a single federated user whose apparent actions we investigated, because the other federated users had not been impersonated by the threat actor in a meaningful way. We knew the approximate start and end dates to focus on and had discovered that the threat actor had performed a number of unwanted actions.
+After reviewing the actions, it was clear that the threat actor had performed a console sign-in on three separate occasions within a 2-hour window. Each time, the threat actor attempted to perform a subset of the following actions:
+
+- CreateAccessKey — Create a new AWS secret access key
+- CreateLoginProfile — Create a console password for a given IAM user
+- UpdateAccessKey — Change an access key from inactive to active (or vice versa)
+- DeleteAccessKey — Delete an access key pair
+- PutRolePolicy — Add or update an inline IAM policy
+- CreatePolicyVersion — Create a new version of an existing managed policy
+
+> Note: This list includes only the actions that are displayed as readOnly = false in AWS CloudTrail, because these actions are often (but not always) the more impactful ones, with the potential to change the AWS environment.
+
+This is the point where the benefit of permission restriction became clear. As soon as this list was compiled, we noticed that two fields were present for all of the actions listed:
+
+```
+"errorCode": "Client.UnauthorizedOperation",
+"errorMessage": "You are not authorized to perform this operation. [rest of message]"
+```
+
+As this reveals, every single non-readOnly action that was attempted by the threat actor was denied because the federated user account did not have the required IAM permissions.
+
+### Customer communication and result
+
+After we confirmed the findings, we had a call with the customer to discuss the results. As you can imagine, they were happy that the results showed no material impact to their data, and said no further investigation or actions were required at that time.
+What were the IAM permissions the federated user had, which prevented the set of actions the threat actor attempted?
+The answer did not actually involve the absolute minimal set of permissions required by the user to do their job. It’s simply that the federated user had a role that didn’t have an Allow statement for the IAM actions the threat actor tried — their job did not require them. Without an explicit Allow statement, the IAM actions attempted were denied because IAM policies are Deny by default. In this instance, simply not having the desired IAM permissions meant that the threat actor wasn’t able to achieve their goal, and stopped using the access. We’ll never know what their goal actually was, but trying to create access keys, passwords, and update policies means that a fair guess would be that they were attempting to create another way to access that AWS account.
+
+## Some tools to help
+
+We’ve just looked at how limiting privileges helped during two different security events. Now, let’s consider what can help you decide how to reduce your IAM permissions to an appropriate level. There are a number of resources that talk about different approaches:
+The first approach is to use Access Analyzer to help generate IAM policies based on access activity from log data. This can then be refined further with the addition of Condition elements as desired. We already have a couple of blog posts about that exact topic:
+
+- IAM Access Analyzer makes it easier to implement least privilege permissions by generating IAM policies based on access activity.
+- Use IAM Access Analyzer to generate IAM policies based on access activity found in your organization trail.
+
+The second approach is similar, and that is to reduce policy scope based on the last-accessed information:
+
+- Review last accessed information to identify unused EC2, IAM, and Lambda permissions and tighten access for your IAM roles.
+
+The third approach is a manual method of creating and refining policies to reduce the amount of work required. For this, you can begin with an appropriate AWS managed IAM policy or an AWS provided example policy as a starting point. Following this, you can add or remove Actions, Resources, and Conditions — using wildcards as desired — to balance your effort and permission reduction.
+An example of balancing effort and permission is in the IAM tutorial Create and attach your first customer managed policy. In it, the authors create a policy that uses iam:Get* and iam:List:* in the Actions section. Although not all iam:Get* and iam:List:* Actions may be required, this is a good way to group similar Actions together while minimizing Actions that allow unwanted access — for example, iam:Create* or iam:Delete*. Another example of this balancing was mentioned earlier relating to Amazon S3, allowing access to create, delete, and read objects, but not to change the configuration of the bucket those objects are in.
+In addition to limiting permissions, we also recommend that you set up appropriate detection and response capability. This will enable you to know when an issue has occurred and provide the tools to contain and recover from the issue. Further details about performing incident response in an AWS account can be found in the AWS Security Incident Response Guide.
+There are also two services that were used to help in the stories we presented here — Amazon GuardDuty and AWS CloudTrail. GuardDuty is a threat detection service that continuously monitors your AWS accounts and workloads for malicious activity. It’s a great way to monitor for unwanted activity within your AWS accounts. CloudTrail records account activity across your AWS infrastructure and provides the logs that were used for the analysis that AWS CIRT performed for both these stories. Making sure that both of these are set up correctly is a great first step towards improving your threat detection and incident response capability in AWS.
+
+## Conclusion
+
+In this post, we looked at two examples where limiting privilege provided positive results during a security event. In the second case, the policy used should probably have restricted permissions further, but even as it stood, it was an effective preventative control in stopping the unauthorized user from achieving their assumed goal.
+Hopefully these stories will provide new insight into the way your organization thinks about setting permissions, while taking into account the effort of creating the permissions. These stories are a good example of how starting a journey towards least privilege can help stop unauthorized users. Neither of the scenarios had policies that were least privilege, but the policies were restrictive enough that the unauthorized users were prevented from achieving their goals this time, resulting in minimal impact to the customers. However in both cases AWS CIRT recommended further reducing the scope of the IAM policies being used.
+Finally, we provided a few ways to go about reducing permissions—first, by using tools to assist with policy creation, and second, by editing existing policies so they better fit your specific needs. You can get started by checking your existing policies against what Access Analyzer would recommend, by looking for and removing overly permissive wildcard characters (*) in some of your existing IAM policies, or by implementing and refining your SCPs.
+If you have feedback about this post, submit comments in the Comments section below. If you have questions about this post, contact AWS Support.
+Want more AWS Security news? Follow us on Twitter.

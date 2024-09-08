@@ -22,7 +22,7 @@ We observed an attacker attempting and failing to enumerate the settings for sen
 
 > The attacker has compromised credentials, but they don't know where they’ve landed in the breached environment. Their goal is to gain situational awareness and understand the value and potential of the compromised account.
 
-The likely purpose of this activity is smishing (phishing via SMS messages). Spammers regularly abuse stolen cloud and SaaS application keys that can provide texting-as-a-service, which offers a convenient way to distribute the SMS spam and phishing, and carriers typically trust these apps.
+The likely purpose of this activity is 'smishing' (phishing via SMS messages). Spammers regularly abuse stolen cloud and SaaS application keys that can provide texting-as-a-service, which offers a convenient way to distribute the SMS spam and phishing, and carriers typically trust these apps.
 Attackers with the correct permissions will enumerate SMS settings with `GetSMSAttributes` or `GetSMSSandboxAccountStatus` and then use the AWS SNS API call `Publish` to send out SMS messages with their phishing links.
 Several publicly available threat actor toolsets abuse services like Twilio and Amazon SNS, attackers will then advertise on platforms like Telegram for individuals or groups interested in SMS spam or smishing. This is also reinforced by our internal data with AWS SNS being one of the services that attackers target most frequently.
 
@@ -36,25 +36,17 @@ https://datadog-securitylabs.imgix.net/img/tales-from-the-cloud-trenches-aws-act
 
 The following table shows some of the relevant Cloudtrail API calls we have seen related to smishing attacks. It is worth noting `sns:Publish` is a data plane event and may need configured separately.
 
-+--------------------------------+------------------------------------------------------+
-| CloudTrail event               | Threat Perspective                                   |
-+================================+======================================================+
-| ```                            | "What's the SMS monthly spend limit?"                |
-| sns:GetSMSAttributes           |                                                      |
-| ```                            |                                                      |
-+--------------------------------+------------------------------------------------------+
-| ```                            | "What are the credentials I compromised?"            |
-| sts:GetCallerIdentity          |                                                      |
-| ```                            |                                                      |
-+--------------------------------+------------------------------------------------------+
-| ```                            | "Is the account in a sandbox and therefore limited?" |
-| sns:GetSMSSandboxAccountStatus |                                                      |
-| ```                            |                                                      |
-+--------------------------------+------------------------------------------------------+
-| ```                            | "Send an SMS message"                                |
-| sns:Publish                    |                                                      |
-| ```                            |                                                      |
-+--------------------------------+------------------------------------------------------+
++----------------------------------+------------------------------------------------------+
+| CloudTrail event                 | Threat Perspective                                   |
++==================================+======================================================+
+| `sns:GetSMSAttributes`           | "What's the SMS monthly spend limit?"                |
++----------------------------------+------------------------------------------------------+
+| `sts:GetCallerIdentity`          | "What are the credentials I compromised?"            |
++----------------------------------+------------------------------------------------------+
+| `sns:GetSMSSandboxAccountStatus` | "Is the account in a sandbox and therefore limited?" |
++----------------------------------+------------------------------------------------------+
+| `sns:Publish`                    | "Send an SMS message"                                |
++----------------------------------+------------------------------------------------------+
 
 ## Pivoting on IP addresses: Discovering a phishing campaign
 

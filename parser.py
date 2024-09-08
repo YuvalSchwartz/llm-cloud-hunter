@@ -16,7 +16,7 @@ class Parser:
         for invisible_element in soup.find_all(style=re.compile(r'display\s*:\s*none', re.IGNORECASE)):
             invisible_element.decompose()
 
-        tags_to_remove = ['nav', 'meta', 'style', 'script', 'noscript', 'form', 'button', 'aside']
+        tags_to_remove = ['nav', 'meta', 'style', 'script', 'noscript', 'form', 'button', 'aside', 'source']
         for tag in tags_to_remove:
             for element in soup.find_all(tag):
                 element.decompose()
@@ -72,47 +72,31 @@ class Parser:
                                         child.replace_with(tag_grandchildren[0])
                                         child = tag_grandchildren[0]
                                         child.name = 'figcaption'
-                            elif tag_children[0].name == 'em' and child.text.strip() == tag_children[0].text.strip():
-                                child.replace_with(tag_children[0])
-                                child = tag_children[0]
                                 child.name = 'p'
                             elif tag_children[0].name == 'a':
                                 tag_grandchildren = [tag for tag in list(tag_children[0].children) if isinstance(tag, Tag)]
                                 if len(tag_grandchildren) == 1 and tag_grandchildren[0].name == 'img':
                                     child.replace_with(tag_grandchildren[0])
                                     child = tag_grandchildren[0]
-                            elif tag_children[0].name == 'code':
-                                parsed_paragraph = Parser._parse_element(child)[0].strip()
-                                if parsed_paragraph.count('`') == 2 and parsed_paragraph.startswith('`') and parsed_paragraph.endswith('`') and parsed_paragraph.count('\n') == 0 and len(parsed_paragraph[1:-1].split()) < 5:
-                                    previous_sibling = child.find_previous_sibling()
-                                    current_content_element = child
-                                    next_sibling = child.find_next_sibling()
-                                    if previous_sibling and previous_sibling.name == 'p':
-                                        previous_sibling_tag_children = [tag for tag in list(previous_sibling.children) if isinstance(tag, Tag)]
-                                        if all(tag.name == 'code' for tag in previous_sibling_tag_children):
-                                            for previous_sibling_child in reversed(list(previous_sibling.children)):
-                                                if isinstance(previous_sibling_child, NavigableString) and previous_sibling_child.strip() != '' and not previous_sibling_child.endswith(' '):
-                                                    previous_sibling_child.replace_with(previous_sibling_child + ' ')
-                                                    break
-                                                elif isinstance(previous_sibling_child, Tag) and not previous_sibling_child.string.endswith(' '):
-                                                    previous_sibling_child.string += ' '
-                                                    break
-                                            previous_sibling.append(tag_children[0])
-                                            child.decompose()
-                                            children = list(element.children)
-                                            current_content_element = previous_sibling
-                                    if next_sibling and next_sibling.name == 'p':
-                                        next_sibling_children = list(next_sibling.children)
-                                        if not any(isinstance(child, Tag) for child in next_sibling_children):
-                                            for next_sibling_child in next_sibling_children:
-                                                if isinstance(next_sibling_child, NavigableString) and next_sibling_child.strip() != '' and not next_sibling_child.startswith(' '):
-                                                    next_sibling_child.replace_with(' ' + next_sibling_child)
-                                                    break
-                                            for next_sibling_child in list(next_sibling.children):
-                                                current_content_element.append(next_sibling_child)
-                                            next_sibling.decompose()
-                                            children = list(element.children)
-                    if child.name == 'img':
+                    if child.name == 'li':
+                        tag_children = [tag for tag in list(child.children) if isinstance(tag, Tag)]
+                        if len(tag_children) > 1 and all(tag.name == 'p' for tag in tag_children) and all(len([t for t in list(tag.children) if isinstance(t, Tag)]) == 0 or (len([t for t in list(tag.children) if isinstance(t, Tag)]) == 1 and [t for t in list(tag.children) if isinstance(t, Tag)][0].name == 'code') for tag in tag_children):
+                            new_p_tag = Tag(name='p')
+                            add_space = False
+                            for tag in tag_children:
+                                for tag_child in list(tag.children):
+                                    if isinstance(tag_child, Tag):
+                                        if len(list(new_p_tag.children)) > 0 and isinstance(list(new_p_tag.children)[-1], NavigableString):
+                                            list(new_p_tag.children)[-1].replace_with(str(list(new_p_tag.children)[-1]) + ' ')
+                                        add_space = True
+                                    else:
+                                        if add_space:
+                                            tag_child = NavigableString(' ' + str(tag_child))
+                                            add_space = False
+                                    new_p_tag.append(tag_child)
+                                tag.decompose()
+                            child.append(new_p_tag)
+                    elif child.name == 'img':
                         next_sibling = child.find_next_sibling()
                         if next_sibling and (next_sibling.name == 'p' or next_sibling.name == 'span'):
                             next_sibling_tag_children = [tag for tag in list(next_sibling.children) if isinstance(tag, Tag)]
@@ -154,6 +138,22 @@ class Parser:
                                             new_code_tag.append(code_tag_child)
                                     tag.decompose()
                                 child.append(new_pre_tag)
+                        elif len(tag_children) == 2 and tag_children[0].name == 'picture' and tag_children[1].name == 'div' and not tag_children[1].text.strip():
+                            tag_children[1].decompose()
+                    elif child.name == 'span':
+                        span_tag_children = [tag for tag in list(child.children) if isinstance(tag, Tag)]
+                        if len(span_tag_children) == 1 and span_tag_children[0].name == 'span':
+                            span_tag_children = [tag for tag in list(span_tag_children[0].children) if isinstance(tag, Tag)]
+                            if len(span_tag_children) == 1 and span_tag_children[0].name == 'p':
+                                p_tag_children = [tag for tag in list(span_tag_children[0].children) if isinstance(tag, Tag)]
+                                if len(p_tag_children) == 1 and p_tag_children[0].name == 'span':
+                                    span_tag_children = [tag for tag in list(p_tag_children[0].children) if isinstance(tag, Tag)]
+                                    if len(span_tag_children) == 1 and span_tag_children[0].name == 'i':
+                                        child.replace_with(span_tag_children[0])
+                    elif child.name == 'strong':
+                        tag_children = [tag for tag in list(child.children) if isinstance(tag, Tag)]
+                        if len(tag_children) == 1 and tag_children[0].name == 'code' and child.text.strip() == tag_children[0].text.strip():
+                            child.replace_with(tag_children[0])
 
                     Parser._fix_structure(child)
 
@@ -217,9 +217,12 @@ class Parser:
                 if isinstance(child, Tag) and not child.decomposed:
                     if content_finished:
                         child.decompose()
-                    elif child.name == 'footer' and not child.find_next('footer'):
-                        content_finished = True
-                        child.decompose()
+                    elif child.name == 'footer':
+                        if not child.find_next('footer'):
+                            content_finished = True
+                            child.decompose()
+                        elif child.get('class', []) == ['blog-post-meta']:
+                            child.decompose()
                     elif child.name in {'img', 'figure'}:
                         if not include_images:
                             next_element = Parser._get_next_outer_element(child)
@@ -230,7 +233,7 @@ class Parser:
                             child.decompose()
                     elif child.name == 'figcaption' and child.text.lower().strip() == '(click to enlarge)':
                         child.decompose()
-                    elif child.name == 'i' and child.text.lower().strip().startswith('updated'):
+                    elif child.name in {'i', 'em'} and child.text.lower().strip().startswith('updated'):
                         child.decompose()
                     elif child.name == 'br':
                         next_element = Parser._get_next_outer_element(child)
@@ -246,8 +249,12 @@ class Parser:
                         while '--' in combined_classes:
                             combined_classes = combined_classes.replace('--', '-')
                         stripped_lower_text = child.text.lower().strip()
-                        if child.name in {'h1', 'h2', 'h3', 'h4', 'h5', 'h6'} and (stripped_lower_text == '' or stripped_lower_text == 'expel blog' or 'date-header' in combined_classes):
-                            child.decompose()
+                        if child.name in {'h1', 'h2', 'h3', 'h4', 'h5', 'h6'}:
+                            if stripped_lower_text.startswith('learn more about') and not child.find_next(lambda tag: tag.name in {'h1', 'h2', 'h3', 'h4', 'h5', 'h6'}):
+                                content_finished = True
+                                child.decompose()
+                            elif stripped_lower_text == '' or stripped_lower_text == 'expel blog' or 'date-header' in combined_classes:
+                                child.decompose()
                         elif child.name == 'p':
                             if (len([tag for tag in list(child.children) if isinstance(tag, Tag)]) == 0 and not child.string) or child.string == '\xa0' or child.string == '\u200d' or stripped_lower_text.startswith('this post is also available in') or stripped_lower_text == 'research' or 'date' in combined_classes:
                                 child.decompose()
@@ -263,7 +270,8 @@ class Parser:
                                 child.decompose()
                         elif child.name in {'div', 'span'}:
                             unwanted_classes = ['page-top', 'nav', 'breadcrumb', 'breadcrumbs', 'custom-meta', 'reading-time', 'function-list', 'duration', 'sidebar', 'table-of-contents', 'menu', 'dropdown', 'github-buttons', 'post-date', 'time-blog', 'author', 'back-to-blog', 'post-footer', 'button', 'btn', 'google-auto-placed', 'adsbygoogle', 'gist-meta', 'modal', 'subscribe', 'form', 'subscribeFormModal', 'close', 'latest-blogs', 'related-threat', 'newsletter', 'be-tags-wrapper', 'social', 'share-article', 'feedback-card']
-                            if stripped_lower_text.count('cookie') >= 5 or ((stripped_lower_text.startswith('by:') or stripped_lower_text.startswith('published:') or stripped_lower_text.startswith('credits:') or stripped_lower_text.startswith('acknowledgements:') or stripped_lower_text.startswith('related products') or stripped_lower_text.startswith('share') or stripped_lower_text == 'plain text') and len(stripped_lower_text) < 120) or any(unwanted_class in combined_classes for unwanted_class in unwanted_classes) or combined_classes == 'date':
+                            unwanted_ids = ['sidebar', 'meta']
+                            if stripped_lower_text.count('cookie') >= 5 or ((stripped_lower_text.startswith('by:') or stripped_lower_text.startswith('published:') or stripped_lower_text.startswith('credits:') or stripped_lower_text.startswith('acknowledgements:') or stripped_lower_text.startswith('related products') or stripped_lower_text.startswith('share') or stripped_lower_text == 'plain text') and len(stripped_lower_text) < 120) or any(unwanted_class in combined_classes for unwanted_class in unwanted_classes) or combined_classes == 'date' or any(unwanted_id in child.get('id', '').lower() for unwanted_id in unwanted_ids):
                                 if 'post-footer' in combined_classes:
                                     content_finished = True
                                 child.decompose()
@@ -306,17 +314,19 @@ class Parser:
                 inside_table = True
             elif inside_table and stripped_line.startswith('+') and all(c in {'+', '-'} for c in stripped_line) and i < len(lines) - 1 and lines[i + 1].strip() == '':
                 inside_table = False
-            elif not inside_code and not inside_table and stripped_line != '':
+            elif not inside_code and not inside_table and stripped_line != '' and not stripped_line.startswith('_'):
+                # Fix extra spaces
                 lines[i] = re.sub(r'(\S) {2,}(\S)', r'\1 \2', lines[i])
-
+                # Fix lack of spacing after punctuation
+                lines[i] = re.sub(r'( [a-z]{2,})([.,])([A-Z][a-z]+)', r'\1\2 \3', lines[i])
                 # Fix spacing before punctuation
-                lines[i] = re.sub(r'([a-zA-Z0-9)\]}>\'`])\s+([.,:;?!])', r'\1\2', lines[i])
+                lines[i] = re.sub(r'([a-zA-Z0-9)\]}>\'`‘’‛“”‟"]) +([.,:;?!])', r'\1\2', lines[i])
                 # Fix spacing after an opening bracket
-                lines[i] = re.sub(r"([(\[{<«])\s+([a-zA-Z0-9'`‘’‛“”‟\"])", r'\1\2', lines[i])
+                lines[i] = re.sub(r"([(\[{<«]) +([a-zA-Z0-9'`‘’‛“”‟\"])", r'\1\2', lines[i])
                 # Fix spacing before a closing bracket
-                lines[i] = re.sub(r"([a-zA-Z0-9'`‘’‛“”‟\"])\s+([)\]}>»])", r'\1\2', lines[i])
+                lines[i] = re.sub(r"([a-zA-Z0-9'`‘’‛“”‟\"]) +([)\]}>»])", r'\1\2', lines[i])
                 # Switching the order of a period/comma and a quotation mark if needed
-                lines[i] = re.sub(r"([.,])(['`‘’‛“”‟\"])\s([a-zA-Z])", r'\2\1 \3', lines[i])
+                lines[i] = re.sub(r"([.,])(['‘’‛“”‟\"])( [a-zA-Z])?", r'\2\1\3', lines[i])
 
                 # Check if the line is likely a URL path or a code command
                 if not Parser._is_likely_command(lines[i]):
@@ -367,53 +377,45 @@ class Parser:
         return '\n'.join(lines).strip()
 
     @staticmethod
-    def _fix_list_periods(text: str) -> str:
+    def _fix_list_periods(markdown: str, list_level: int) -> str:
         inside_code = False
         inside_table = False
+        relevant_line_indexes = []
         line_lengths = []
         period_count = 0
-        lines = text.split('\n')
+        lines = markdown.split('\n')
         for i, line in enumerate(lines):
-            stripped_line = re.sub(r'^(\d+\.\s|-\s)', '', line.strip())
-            if stripped_line == '```':
-                inside_code = not inside_code
-            elif not inside_table and stripped_line.startswith('+') and all(c in {'+', '-'} for c in stripped_line):
-                inside_table = True
-            elif inside_table and stripped_line.startswith('+') and all(c in {'+', '-'} for c in stripped_line) and i < len(lines) - 1 and lines[i + 1].strip() == '':
-                inside_table = False
-            elif not inside_code and not inside_table and stripped_line != '':
-                line_lengths.append(len(stripped_line.split()))
-                if stripped_line[-1] in {'.', ',', ':', ';', '?', '!'}:
-                    period_count += 1
+            match = re.match(rf'^ {{{list_level * 4}}}(?:- |\d+\. )(.+)', line)
+            if match:
+                content = match.group(1)
+                if content == '```':
+                    inside_code = not inside_code
+                elif not inside_table and content.startswith('+') and all(c in {'+', '-'} for c in content):
+                    inside_table = True
+                elif inside_table and content.startswith('+') and all(c in {'+', '-'} for c in content) and i < len(lines) - 1 and lines[i + 1].strip() == '':
+                    inside_table = False
+                elif not inside_code and not inside_table and content != '' and not content.startswith('    '):
+                    relevant_line_indexes.append(i)
+                    line_lengths.append(len(content.split()))
+                    if content[-1] in {'.', ',', ':', ';', '?', '!'}:
+                        period_count += 1
 
         average_line_length = sum(line_lengths) / len(line_lengths) if line_lengths else 0
-        most_end_with_period = period_count / len(lines) > 0.5
-        keep_periods = False
-        if most_end_with_period or average_line_length > 10:
-            keep_periods = True
+        end_with_period_ratio = period_count / len(line_lengths) if line_lengths else 0
+        keep_periods = True if end_with_period_ratio > 0.5 or average_line_length > 10 else False
 
-        inside_code = False
-        inside_table = False
-        for i in range(len(lines)):
-            stripped_line = re.sub(r'^(\d+\.\s|-\s)', '', lines[i].strip())
-            if stripped_line == '```':
-                inside_code = not inside_code
-            elif not inside_table and stripped_line.startswith('+') and all(c in {'+', '-'} for c in stripped_line):
-                inside_table = True
-            elif inside_table and stripped_line.startswith('+') and all(c in {'+', '-'} for c in stripped_line) and i < len(lines) - 1 and lines[i + 1].strip() == '':
-                inside_table = False
-            elif not inside_code and not inside_table and stripped_line != '':
-                if keep_periods:
-                    if lines[i][-1] not in {'.', ',', ':', ';', '?', '!'} and not lines[i].endswith('and'):
-                        lines[i] += '.'
-                else:
-                    if lines[i][-1] == '.':
-                        lines[i] = lines[i][:-1]
+        for i in relevant_line_indexes:
+            if keep_periods:
+                if lines[i][-1] not in {'.', ',', ':', ';', '?', '!'} and not lines[i].endswith('and'):
+                    lines[i] += '.'
+            else:
+                if lines[i][-1] == '.':
+                    lines[i] = lines[i][:-1]
 
         return '\n'.join(lines)
 
     @staticmethod
-    def _parse_list_element(list_element: Tag, image_count: int, list_level: int) -> (str, int, int):
+    def _parse_list_element(list_element: Tag, list_level: int) -> (str, int, int):
         if list_element.name == 'dl' and Parser._is_descendant_of_name(list_element, {'ul', 'ol'}):
             list_level -= 1
         ordered_list_item_count = 1
@@ -421,7 +423,7 @@ class Parser:
         list_text = ''
 
         for item_index, item in enumerate(items):
-            item_text, image_count, list_level = Parser._parse_element(item, image_count, list_level)
+            item_text, list_level = Parser._parse_element(item, list_level)
             item_text = Parser._refine_text(item_text)
             if item_text:
                 prefix = ''
@@ -440,9 +442,9 @@ class Parser:
                     list_text += '\n'
 
         if '\n\n' not in list_text:
-            list_text = Parser._fix_list_periods(list_text)
+            list_text = Parser._fix_list_periods(list_text, list_level)
 
-        return list_text, image_count, list_level
+        return list_text, list_level
 
     @staticmethod
     def _generate_table_from_csv_data(csv_data: str, include_headers: bool = True) -> str:
@@ -540,7 +542,7 @@ class Parser:
         return table_text
 
     @staticmethod
-    def _parse_table_element(table_element: Tag, image_count: int, list_level: int) -> (str, int, int):
+    def _parse_table_element(table_element: Tag, list_level: int) -> tuple[str, int]:
         include_headers = False
         rows = []
 
@@ -560,7 +562,7 @@ class Parser:
             for cell in row.find_all(['th', 'td'], recursive=False):
                 if cell.name == 'th':
                     include_headers = True
-                cell_text, image_count, list_level = Parser._parse_element(cell, image_count, list_level)
+                cell_text, list_level = Parser._parse_element(cell, list_level)
                 cell_text = cell_text.strip().replace(',', '~').replace('\n', '\\n')
                 if cell.has_attr('colspan'):
                     cell_text += f"{{colspan-{cell['colspan']}}}"
@@ -577,7 +579,7 @@ class Parser:
 
         table_text = Parser._generate_table_from_csv_data(csv_data, include_headers)
 
-        return table_text, image_count, list_level
+        return table_text, list_level
 
     @staticmethod
     def _is_likely_yaml(text):
@@ -743,15 +745,8 @@ class Parser:
         return text
 
     @staticmethod
-    def _is_written_in_foreign_language(text: str) -> bool:
-        # word is a word if it has at least one letter
-        words = [word for word in text.split() if any(char.isalpha() for char in word)]
-        words_in_foreign_language = [word for word in words if any('\u0400' <= char <= '\u04FF' for char in text)]
-        return len(words_in_foreign_language) / len(words) > 0.5 if words else False
-
-    @staticmethod
-    def _parse_element(element: Tag, image_count: int = 0, list_level: int = -1, inside_hr: bool = False) -> (str, int, int):
-        text = ""
+    def _parse_element(element: Tag, list_level: int = -1, inside_hr: bool = False) -> tuple[str, int]:
+        markdown = ""
 
         for child in element.children:
             if isinstance(child, NavigableString):
@@ -759,34 +754,34 @@ class Parser:
                     child = child.replace('\xa0 \xa0', '\xa0\xa0')
                 clean_string = child.replace('\xa0', ' ').replace('\u200d', '').replace('\t', '')
                 if element.name != 'code' and not Parser._is_descendant_of_name(element, 'code'):
-                    if Parser._is_written_in_foreign_language(clean_string) or clean_string == '\n' or (clean_string == ' ' and (text.endswith('\n') or (isinstance(child.previous_sibling, NavigableString) and child.previous_sibling == '\n'))):
+                    if clean_string == '\n' or (clean_string == ' ' and (markdown.endswith('\n') or (isinstance(child.previous_sibling, NavigableString) and child.previous_sibling == '\n'))):
                         continue
                     clean_string = re.sub(r'\s+\n', '\n', clean_string)
                     clean_string = re.sub(r'\n\s+', '\n', clean_string)
-                    if text and text[-1] not in {'(', '[', '{', '\n', ' ', '“', '"'} and clean_string and clean_string[0] not in {'.', ',', ')', ']', '}', '\n', ' ', '”', '"', ':', ';'}:
-                        text += ' '
-                text += clean_string
+                if markdown and not markdown.endswith(' ') and clean_string and clean_string.startswith('–'):
+                    markdown += ' '
+                markdown += clean_string
             elif isinstance(child, Tag):
                 if child.name in {'span', 'div'}:
-                    recursive_text, image_count, list_level = Parser._parse_element(child, image_count, list_level, inside_hr)
+                    recursive_text, list_level = Parser._parse_element(child, list_level, inside_hr)
                     if recursive_text:
                         if 'tooltip' in ' '.join(child.get('class', [])):
                             if recursive_text.endswith('.'):
                                 recursive_text = recursive_text[:-1]
                             recursive_text = '(' + recursive_text + ')'
-                        if not Parser._is_descendant_of_name(child, 'code') and text and text[-1] not in {'(', '[', '{', '\n', ' ', '“', '"'} and recursive_text[0] not in {')', ']', '}', '\n', ' ', '”', '"', ':', ';'}:
-                            text += ' '
+                        if not Parser._is_descendant_of_name(child, 'code') and markdown and markdown[-1] not in {'(', '[', '{', '\n', ' ', '“', '"'} and recursive_text[0] not in {')', ']', '}', '\n', ' ', '”', '"', ':', ';', '*'}:
+                            markdown += ' '
                         if child.name == 'div':
                             recursive_text = Parser._add_period_or_colon_if_needed(child, recursive_text)
-                        text += recursive_text
+                        markdown += recursive_text
                         next_element = Parser._get_next_outer_element(child, {'div'})
                         if isinstance(next_element, Tag):
                             if Parser._is_descendant_of_name(child, {'ul', 'ol', 'dl'}) and next_element.name in {'ul', 'ol', 'dl', 'li', 'dt', 'dd'}:
-                                text += '\n'
+                                markdown += '\n'
                             elif next_element.name in {'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'ul', 'ol', 'img', 'table', 'blockquote'}:
-                                text += '\n\n'
+                                markdown += '\n\n'
                 elif child.name in {'h1', 'h2', 'h3', 'h4', 'h5', 'h6'}:
-                    heading_text, image_count, list_level = Parser._parse_element(child, image_count, list_level, inside_hr)
+                    heading_text, list_level = Parser._parse_element(child, list_level, inside_hr)
                     heading_text = Parser._refine_text(heading_text.replace('\n', ' '))
                     if heading_text:
                         if heading_text.startswith('> '):
@@ -794,38 +789,51 @@ class Parser:
                         if child.get('class', []) == ['tags']:
                             tags_index = heading_text.lower().find('tags: ')
                             heading_text = heading_text[tags_index:] if tags_index != -1 else heading_text
-                            text += f'{heading_text}\n\n'
+                            markdown += f'{heading_text}\n\n'
                         else:
-                            text += f'{"#" * int(child.name[1])} {heading_text}\n\n'
+                            markdown += f'{"#" * int(child.name[1])} {heading_text}\n\n'
                 elif child.name == 'p':
-                    recursive_text, image_count, list_level = Parser._parse_element(child, image_count, list_level, inside_hr)
+                    recursive_text, list_level = Parser._parse_element(child, list_level, inside_hr)
                     recursive_text = Parser._refine_text(recursive_text)
                     if recursive_text:
                         stripped_recursive_text = recursive_text.strip()
-                        if not Parser._is_descendant_of_name(child, {'ul', 'ol', 'dl', 'table'}) and not ((recursive_text.count('`') == 2 and stripped_recursive_text.startswith('`') and stripped_recursive_text.endswith('`')) or (recursive_text.count('`') == 6 and stripped_recursive_text.startswith('```') and stripped_recursive_text.endswith('```'))) and not Parser._is_likely_command(stripped_recursive_text) and len(recursive_text.split()) > 5 and recursive_text[-1] not in {'.', ',', ':', ';', '?', '!'}:
+                        if not Parser._is_descendant_of_name(child, {'ul', 'ol', 'dl', 'table'}) and not ((recursive_text.count('`') == 2 and stripped_recursive_text.startswith('`') and stripped_recursive_text.endswith('`')) or (recursive_text.count('`') == 6 and stripped_recursive_text.startswith('```') and stripped_recursive_text.endswith('```'))) and not Parser._is_likely_command(stripped_recursive_text) and len(recursive_text.split()) > 5 and recursive_text[-1] not in {'.', ',', ':', ';', '?', '!'} and not recursive_text.startswith('_') and not recursive_text.endswith('_'):
                             recursive_text += '.'
-                        text += f'{recursive_text}\n'
+                        markdown += f'{recursive_text}\n'
                         if Parser._is_descendant_of_name(child, {'ul', 'ol', 'dl'}):
                             next_element = Parser._get_next_outer_element(child, {'div', 'ul', 'ol', 'dl', 'li', 'dt', 'dd'})
                         else:
                             next_element = Parser._get_next_outer_element(child, {'div'})
-                        if isinstance(next_element, Tag) and ((not inside_hr and next_element.name != 'p') or (inside_hr and next_element.name not in {'p', 'hr'})):
-                            text += '\n'
+                        if (isinstance(next_element, Tag) and ((not inside_hr and next_element.name != 'p') or (inside_hr and next_element.name not in {'p', 'hr'}))) or (recursive_text.startswith('_') and recursive_text.endswith('_')):
+                            markdown += '\n'
+                elif child.name == 'em' and element.name == 'p':
+                    italic_text, list_level = Parser._parse_element(child, list_level, inside_hr)
+                    if italic_text:
+                        prefix = ' ' if italic_text.startswith(' ') else ''
+                        suffix = ' ' if italic_text.endswith(' ') else ''
+                        if Parser._is_descendant_of_name(child, 'blockquote'):
+                            mark = ''
+                        elif child.text == element.text:
+                            mark = '_'
+                            suffix += '\n\n'
+                        else:
+                            mark = "'"
+                        markdown += f"{prefix}{mark}{italic_text.strip()}{mark}{suffix}"
                 elif child.name == 'hr':
-                    text += '---\n'
+                    markdown += '---\n'
                     if inside_hr:
-                        text += '\n'
+                        markdown += '\n'
                         inside_hr = False
                     else:
                         inside_hr = True
                 elif child.name == 'br':
-                    text = Parser._add_period_or_colon_if_needed(child, text)
+                    markdown = Parser._add_period_or_colon_if_needed(child, markdown)
                     previous_element = Parser._get_previous_outer_element(child, {'div'})
                     next_element = Parser._get_next_outer_element(child, {'div'})
-                    if not (text.endswith('\n') or (isinstance(previous_element, NavigableString) and previous_element.endswith('\n')) or (isinstance(next_element, NavigableString) and next_element.startswith('\n'))):
-                        text += '\n'
+                    if not (markdown.endswith('\n') or (isinstance(previous_element, NavigableString) and previous_element.endswith('\n')) or (isinstance(next_element, NavigableString) and next_element.startswith('\n'))):
+                        markdown += '\n'
                     if isinstance(next_element, Tag) and next_element.name in {'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'ul', 'ol', 'table', 'code', 'blockquote'}:
-                        text += '\n'
+                        markdown += '\n'
                 elif child.name == 'img':
                     if 'data-orig-file' in child.attrs:
                         image_url = child['data-orig-file']
@@ -839,82 +847,78 @@ class Parser:
                         image_url = None
                     if image_url:
                         image_url = image_url.replace('\n', '')
-                        image_count += 1
                         image_alt_text = child.get('alt', '')
                         if image_alt_text:
-                            text += f'[Image Info:\n- Alt Text: {image_alt_text}\n{image_url}]\n'
+                            markdown += f'[Image Info:\n- Alt Text: {image_alt_text}\n{image_url}]\n'
                         else:
-                            text += f'[Image Info:\n{image_url}]\n'
+                            markdown += f'[Image Info:\n{image_url}]\n'
                         next_element = Parser._get_next_outer_element(child, {'div'})
                         if isinstance(next_element, Tag):
-                            if next_element.name in {'figcaption', 'em'}:
-                                text += '- Caption: '
+                            if next_element.name in {'figcaption', 'i'}:
+                                markdown += '- Caption: '
                             else:
-                                text += '\n'
+                                markdown += '\n'
                     else:
                         logging.error(f'Could not find image URL for image element: {child}')
                 elif child.name in {'caption', 'figcaption', 'i'}:
-                    caption_text, image_count, list_level = Parser._parse_element(child, image_count, list_level, inside_hr)
+                    caption_text, list_level = Parser._parse_element(child, list_level, inside_hr)
                     caption_text = Parser._refine_text(caption_text)
                     if caption_text:
                         if caption_text[-1] not in {'.', ',', ':', ';', '?', '!'}:
                             caption_text += '.'
-                        caption_text = re.sub(r'^(?:Figure|Illustration) \d+[.:]?\s', '', caption_text)
-                        text += f'{caption_text}\n'
-                        if child.name in {'figcaption', 'i'}:
-                            text += '\n'
+                        markdown += f'{caption_text}\n\n'
                 elif child.name in {'ul', 'ol', 'dl'}:
                     list_level += 1
-                    list_text, image_count, list_level = Parser._parse_list_element(child, image_count, list_level)
+                    list_text, list_level = Parser._parse_list_element(child, list_level)
                     list_level -= 1
                     if list_text:
-                        text += f'{list_text}\n'
+                        markdown += f'{list_text}\n'
                         next_element = Parser._get_next_outer_element(child, {'div'})
                         if isinstance(next_element, Tag) and next_element.name not in {'ul', 'ol', 'dl', 'li', 'dt', 'dd'}:
-                            text += '\n'
+                            markdown += '\n'
                 elif child.name == 'code':
-                    code_text, image_count, list_level = Parser._parse_element(child, image_count, list_level, inside_hr)
+                    code_text, list_level = Parser._parse_element(child, list_level, inside_hr)
                     code_text = '\n'.join([line.rstrip(' ') for line in code_text.split('\n')]).strip()
                     if code_text:
                         previous_element = Parser._get_previous_outer_element(child, {'div'})
                         previous_li_element = previous_element if previous_element and previous_element.parent == element else None
                         next_element = Parser._get_next_outer_element(child, {'div'})
                         next_li_element = next_element if next_element and next_element.parent == element else None
-                        if element.name == 'p' or (element.name in {'li', 'a', 'td'} and (isinstance(previous_li_element, NavigableString) or isinstance(next_li_element, NavigableString) or (isinstance(previous_li_element, Tag) and (previous_li_element.name == 'code')) or (isinstance(next_li_element, Tag) and (next_li_element.name == 'code')))):
-                            text += f'`{code_text}`'
+                        if element.name == 'p' or (element.name in {'li', 'a', 'td'} and ((isinstance(previous_li_element, NavigableString) or isinstance(next_li_element, NavigableString) or (isinstance(previous_li_element, Tag) and (previous_li_element.name == 'code')) or (isinstance(next_li_element, Tag) and (next_li_element.name == 'code'))) or (' ' not in code_text))):
+                            markdown += f'`{code_text}`'
                         else:
                             code_text = Parser._handle_code_text(code_text)
-                            text += f'```\n{code_text}\n```\n'
+                            markdown += f'```\n{code_text}\n```\n'
                             if isinstance(next_element, Tag) and next_element.name == 'i':
-                                text += 'Code Caption: '
+                                markdown += 'Code Caption: '
                             else:
-                                text += '\n'
+                                markdown += '\n'
                 elif child.name == 'blockquote':
-                    recursive_text, image_count, list_level = Parser._parse_element(child, image_count, list_level, inside_hr)
+                    recursive_text, list_level = Parser._parse_element(child, list_level, inside_hr)
                     recursive_text = Parser._refine_text(recursive_text)
                     if recursive_text:
-                        text += f'> {recursive_text}\n\n'
+                        markdown += f'> {recursive_text}\n\n'
                 elif child.name == 'table':
-                    table_text, image_count, list_level = Parser._parse_table_element(child, image_count, list_level)
+                    table_text, list_level = Parser._parse_table_element(child, list_level)
                     if table_text:
-                        text += f'{table_text}\n'
+                        markdown += f'{table_text}\n'
                     next_element = Parser._get_next_outer_element(child, {'div'})
                     if isinstance(next_element, Tag) and next_element.name != 'hr':
-                        text += '\n'
+                        markdown += '\n'
                 elif child.name == 'footer':
-                    recursive_text, image_count, list_level = Parser._parse_element(child, image_count, list_level, inside_hr)
+                    recursive_text, list_level = Parser._parse_element(child, list_level, inside_hr)
                     if recursive_text:
                         recursive_text = recursive_text.replace('\n', ' ').replace('  ', ' ').strip(' \n|')
-                        text += f'{recursive_text}\n\n'
+                        markdown += f'{recursive_text}\n\n'
                 else:
-                    recursive_text, image_count, list_level = Parser._parse_element(child, image_count, list_level, inside_hr)
+                    recursive_text, list_level = Parser._parse_element(child, list_level, inside_hr)
                     if recursive_text:
-                        text += recursive_text
+                        markdown += recursive_text
                         next_element = Parser._get_next_outer_element(child, {'div'})
                         if isinstance(next_element, Tag) and next_element.name in {'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'dl', 'table', 'blockquote'}:
-                            text += '\n\n'
+                            markdown += '\n\n'
 
-        return text, image_count, list_level
+        return markdown, list_level
 
     @staticmethod
     def _reformat_images(markdown: str) -> str:
@@ -970,7 +974,7 @@ class Parser:
         return markdown
 
     @staticmethod
-    def parse_html(html: str, include_images: bool = True) -> tuple[str, int]:
+    def parse_html(html: str, include_images: bool = True) -> str:
         soup = BeautifulSoup(html, 'html.parser')
 
         logging.info('\t\t\tCleaning HTML')
@@ -980,10 +984,10 @@ class Parser:
         logging.info('\t\t\tFiltering HTML elements')
         Parser._filter_elements(soup, include_images)
         logging.info('\t\t\tParsing HTML')
-        markdown, image_count, _ = Parser._parse_element(soup)
+        markdown, _ = Parser._parse_element(soup)
         logging.info('\t\t\tRefining Markdown')
         markdown = Parser._refine_markdown(markdown)
 
         # TODO: Handle cases where the last paragraph of the OSCTI is not relevant (e.g. an advertisement or a footer)
 
-        return markdown, image_count
+        return markdown

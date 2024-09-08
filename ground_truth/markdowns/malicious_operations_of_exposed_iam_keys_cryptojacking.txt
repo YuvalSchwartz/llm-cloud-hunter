@@ -59,7 +59,7 @@ In the case of our experiment with leaked keys, the actor started their operatio
 
 [Image Info:
 - Alt Text: Image 1 is a timeline of the attacker’s movements presented as a table. The columns are eventName, userAgent and time. The events begin and end in August 2023 in a very short timespan (minutes). 
-- Caption: Attacker’s operation timeline.
+- Caption: Figure 1. Attacker’s operation timeline.
 https://unit42.paloaltonetworks.com/wp-content/uploads/2023/10/word-image-130743-1-2.png]
 
 The last line in Figure 1 above shows that, starting with the CloudTrail event AttachUserPolicy, AWS applied the quarantine policy at timestamp 13:30:22. Just four minutes later, at 13:34:15, the actors began their reconnaissance operations using the AWS API DescribeRegions. CloudTrail is an auditing tool that records the actions and events that occur within configured cloud resources.
@@ -70,21 +70,21 @@ Figure 2 shows the overall threat actor automation architecture. GitHub public r
 
 [Image Info:
 - Alt Text: Image 2 is a diagram of the Operation CloudKeys architecture. Three GitHub icons point to a VPN. From the VPN an arrow points to the threat actor. Three nested boxes demonstrate the architecture: AWS cloud > Honey organization management AWS account, Honey AWS account. Inside the Homey AWS account is the IAM and designed policy, as well as three availability zones. From one of the availability zone is the XMR and the Drive encrypted payload. 
-- Caption: Operation CloudKeys architecture.
+- Caption: Figure 2. Operation CloudKeys architecture.
 https://unit42.paloaltonetworks.com/wp-content/uploads/2023/10/word-image-130743-2-2.png]
 
 Figure 3 shows that the threat actor starts by performing an AWS account reconnaissance operation.
 
 [Image Info:
 - Alt Text: Image 3 is a table of the AWS account reconnaissance performed by the threat actor. Different actions include DescribeAccountAttributes, DescribeInstanceTypeOfferings, DescribeInstanceTypes and so on. 
-- Caption: Actor AWS reconnaissance.
+- Caption: Figure 3. Actor AWS reconnaissance.
 https://unit42.paloaltonetworks.com/wp-content/uploads/2023/10/word-image-130743-3-2.png]
 
 After the reconnaissance operation, the threat actor creates AWS security groups (as shown in Figure 4) before finally launching multiple EC2 instances per region across any accessible AWS region.
 
 [Image Info:
 - Alt Text: Image 4 is a table of the security groups modified by the threat actor. 
-- Caption: Modifying security groups and launching the first EC2 Instance.
+- Caption: Figure 4. Modifying security groups and launching the first EC2 Instance.
 https://unit42.paloaltonetworks.com/wp-content/uploads/2023/10/word-image-130743-4-2.png]
 
 The data we collected shows indications that the actor’s automation operation is behind a VPN. They repeated the same operations across multiple regions, generating a total of more than 400 API calls and taking only seven minutes, according to CloudTrail logging. This indicates that the actor is successfully able to obscure their identity while launching automated attacks against AWS account environments.
@@ -96,7 +96,7 @@ The threat actors used large-format cloud virtual machines to perform their oper
 
 [Image Info:
 - Alt Text: Image 5 is a table of instance type statistics and their distribution. The rows are requestParameters.instanceType, awsRegion and count. The regions include AP Northeast, EU Central, EU West, US East among others. 
-- Caption: Instantiated AWS EC2 instance types across regions.
+- Caption: Figure 5. Instantiated AWS EC2 instance types across regions.
 https://unit42.paloaltonetworks.com/wp-content/uploads/2023/10/word-image-130743-5-2.png]
 
 To instantiate Amazon EC2 instances, the threat actor used the RunInstance API. This API has a parameter for accepting AWS Cloud-Init scripts. The Cloud-Init scripts are executed during the instance startup process. The threat actor used this mechanism to automate the EC2 instance configuration and perform the desired actions.
@@ -105,7 +105,7 @@ As shown in Figure 6, the mining automation operation displayed the user data au
 
 [Image Info:
 - Alt Text: Image 6 is a screenshot of many lines of code. It is the configurations script for the mining operation.
-- Caption: Miner’s configuration script.
+- Caption: Figure 6. Miner’s configuration script.
 https://unit42.paloaltonetworks.com/wp-content/uploads/2023/10/word-image-130743-6-2.png]
 
 Figure 7 shows the payload was stored in Google Drive. Note that Google Drive URLs are anonymous by design. It is not possible to map this URL to a Google Cloud user account. The downloaded payload was stored encrypted and then decrypted upon download, as shown on line 6.
@@ -113,14 +113,14 @@ The payload was a known mining tool, and the hash can be correlated to previous 
 
 [Image Info:
 - Alt Text: Image 7 is a table of known crypto mining binaries that share the same meta-data. The columns are date, name, source, and country.
-- Caption: Known cryptomining binaries sharing the same metadata.
+- Caption: Figure 7. Known cryptomining binaries sharing the same metadata.
 https://unit42.paloaltonetworks.com/wp-content/uploads/2023/10/word-image-130743-7-2.png]
 
 The type of Amazon Machine Images (AMI) the threat actor used was also distinctive. The identified images were private and they were not listed in the AWS Marketplace. Figure 8 shows the following AMI instances’ IDs were used.
 
 [Image Info:
 - Alt Text: Image 8 is a table of the private AMI image IDs and their count. The table columns are requestParameters.instancesSet.items().imageid. and Count. 
-- Caption: Listing of the private AMI image IDs.
+- Caption: Figure 8. Listing of the private AMI image IDs.
 https://unit42.paloaltonetworks.com/wp-content/uploads/2023/10/word-image-130743-8-2.png]
 
 Some of those images are Ubuntu 18 versions. We believe that all of these indicators of compromise (IoCs) point to this being a long-running mining operation that dates back to at least 2020.
@@ -134,7 +134,7 @@ Given that the SupportXMR service only provides time-limited statistics, we moni
 
 [Image Info:
 - Alt Text: Image 9 is a column graph of the unique XMR miners starting August 30, 2023 and continuing to October 6, 2023. The blue trend line shows a slow rise across the three months. 
-- Caption: Statistics for the number of XMR miners.
+- Caption: Figure 9. Statistics for the number of XMR miners.
 https://unit42.paloaltonetworks.com/wp-content/uploads/2023/10/word-image-130743-9-2.png]
 
 In total, 474 unique miners appeared between Aug. 30, 2023, and Oct. 6, 2023. We can interpret this as 474 unique Amazon EC2 instances that were recorded performing mining operations during this time period. Because the actors mined Monero, a type of cryptocurrency that includes privacy controls, we cannot track the wallet to obtain exact figures of how much the threat actors gained.
@@ -162,7 +162,7 @@ Figure 10 shows the overall IaC architecture for exposing AWS IAM credentials an
 
 [Image Info:
 - Alt Text: Image 10 is a diagram of the cloning and monitoring of GitHub repos using AWS. Three GitHub icons in a green field, a randomly selected repro, are cloned with AWS keys. From there an arrow points to the three nested boxes that demonstrate the architecture: AWS cloud > Honey organization management AWS account containing the AWS Lambda, the Simple Storage Service standard and the containers. An arrow points from the containers to inside the Homey AWS account containing the IAM and designed policy, as well as three compute zones.
-- Caption: Cloning and monitoring GitHub repositories using AWS.
+- Caption: Figure 10. Cloning and monitoring GitHub repositories using AWS.
 https://unit42.paloaltonetworks.com/wp-content/uploads/2023/10/word-image-130743-10-2.png]
 
 The IaC template for the designed architecture was responsible for randomly selecting GitHub repositories, cloning and leaking the AWS IAM keys as past commits in random files. On the AWS side, new AWS accounts were dynamically created for each iteration of the IaC template execution, using the same AWS management organization and centralized CloudTrail log storage.

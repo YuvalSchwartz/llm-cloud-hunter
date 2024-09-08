@@ -17,33 +17,21 @@ In a previous post, we covered common attacker behavior that we've witnessed in 
 
 The first attacker started by enumerating SES quotas and identities (useful for sending spam) and IAM users in the account, then created a new administrator IAM user with a console profile. This initial activity is likely to have been automated and occurred within a time window of 11 seconds.
 
-+------------------------+-----------------------------------------------------------------------+
-| CloudTrail event       | Threat Perspective                                                    |
-+========================+=======================================================================+
-| ```                    | "What's the volume of emails I can send through this account?"        |
-| ses:GetSendQuota       |                                                                       |
-| ```                    |                                                                       |
-+------------------------+-----------------------------------------------------------------------+
-| ```                    | "Who can I impersonate?"                                              |
-| ses:ListIdentities     |                                                                       |
-| ```                    |                                                                       |
-+------------------------+-----------------------------------------------------------------------+
-| ```                    | "How many people are using this account?"                             |
-| iam:ListUsers          |                                                                       |
-| ```                    |                                                                       |
-+------------------------+-----------------------------------------------------------------------+
-| ```                    | "How can I persist if I lose access to the compromised access key?"   |
-| iam:CreateUser         |                                                                       |
-| ```                    |                                                                       |
-+------------------------+-----------------------------------------------------------------------+
-| ```                    | ```                                                                   |
-| iam:AttachUserPolicy   | AdministratorAccess                                                   |
-| ```                    | ```                                                                   |
-+------------------------+-----------------------------------------------------------------------+
-| ```                    | Allows the attacker to log in through the AWS console with a password |
-| iam:CreateLoginProfile |                                                                       |
-| ```                    |                                                                       |
-+------------------------+-----------------------------------------------------------------------+
++--------------------------+-----------------------------------------------------------------------+
+| CloudTrail event         | Threat Perspective                                                    |
++==========================+=======================================================================+
+| `ses:GetSendQuota`       | "What's the volume of emails I can send through this account?"        |
++--------------------------+-----------------------------------------------------------------------+
+| `ses:ListIdentities`     | "Who can I impersonate?"                                              |
++--------------------------+-----------------------------------------------------------------------+
+| `iam:ListUsers`          | "How many people are using this account?"                             |
++--------------------------+-----------------------------------------------------------------------+
+| `iam:CreateUser`         | "How can I persist if I lose access to the compromised access key?"   |
++--------------------------+-----------------------------------------------------------------------+
+| `iam:AttachUserPolicy`   | `AdministratorAccess`                                                 |
++--------------------------+-----------------------------------------------------------------------+
+| `iam:CreateLoginProfile` | Allows the attacker to log in through the AWS console with a password |
++--------------------------+-----------------------------------------------------------------------+
 
 ### Hands-on-keyboard activity begins
 
@@ -101,46 +89,30 @@ Still using the AWS Console, the attacker manually clicked on several S3 buckets
 +-------------------+-------------------------------------------------------------------+
 | CloudTrail events | Comment                                                           |
 +===================+===================================================================+
-| ```               | Enumerate objects in an S3 bucket, possibly in a specific folder  |
-| s3:ListObjects    |                                                                   |
-| ```               |                                                                   |
+| `s3:ListObjects`  | Enumerate objects in an S3 bucket, possibly in a specific folder  |
 +-------------------+-------------------------------------------------------------------+
-| ```               | Retrieve metadata about an S3 object                              |
-| s3:HeadObject     |                                                                   |
-| ```               |                                                                   |
+| `s3:HeadObject`   | Retrieve metadata about an S3 object                              |
 +-------------------+-------------------------------------------------------------------+
-| ```               | Download an S3 object                                             |
-| s3:GetObject      |                                                                   |
-| ```               |                                                                   |
+| `s3:GetObject`    | Download an S3 object                                             |
 +-------------------+-------------------------------------------------------------------+
-| ```               | Triggered by AWS automatically because the file was KMS-encrypted |
-| kms:Decrypt       |                                                                   |
-| ```               |                                                                   |
+| `kms:Decrypt`     | Triggered by AWS automatically because the file was KMS-encrypted |
 +-------------------+-------------------------------------------------------------------+
 
 ### Attempt to run `r6i.metal` EC2 instances in an unused region
 
 As a next step, the attacker attempted to run EC2 instances in an unused region, us-west-1. For this purpose, they used the AWS API credentials of the initially compromised user.
 
-+-----------------------------------+-------------------------------------------------------------+
-| CloudTrail event                  | Comment                                                     |
-+===================================+=============================================================+
-| ```                               | Create an SSH key pair                                      |
-| ec2:ImportKeyPair                 |                                                             |
-| ```                               |                                                             |
-+-----------------------------------+-------------------------------------------------------------+
-| ```                               | Create a security group                                     |
-| ec2:CreateSecurityGroup           |                                                             |
-| ```                               |                                                             |
-+-----------------------------------+-------------------------------------------------------------+
-| ```                               | Open security group to 0.0.0.0/0 on port 22                 |
-| ec2:AuthorizeSecurityGroupIngress |                                                             |
-| ```                               |                                                             |
-+-----------------------------------+-------------------------------------------------------------+
-| ```                               | Run EC2 `r6i.metal` instances, running an Ubuntu Server AMI |
-| ec2:RunInstances                  |                                                             |
-| ```                               |                                                             |
-+-----------------------------------+-------------------------------------------------------------+
++-------------------------------------+-------------------------------------------------------------+
+| CloudTrail event                    | Comment                                                     |
++=====================================+=============================================================+
+| `ec2:ImportKeyPair`                 | Create an SSH key pair                                      |
++-------------------------------------+-------------------------------------------------------------+
+| `ec2:CreateSecurityGroup`           | Create a security group                                     |
++-------------------------------------+-------------------------------------------------------------+
+| `ec2:AuthorizeSecurityGroupIngress` | Open security group to 0.0.0.0/0 on port 22                 |
++-------------------------------------+-------------------------------------------------------------+
+| `ec2:RunInstances`                  | Run EC2 `r6i.metal` instances, running an Ubuntu Server AMI |
++-------------------------------------+-------------------------------------------------------------+
 
 ```
 {
@@ -315,7 +287,8 @@ MITRE ATT&CK mappings:
 
 ## Remediating the attack
 
-Note: Remediating attacker activity is always highly dependent on the environment—teams typically build playbooks iteratively. The advice we offer below may not be comprehensive.
+_Note: Remediating attacker activity is always highly dependent on the environment—teams typically build playbooks iteratively. The advice we offer below may not be comprehensive._
+
 First, we have to understand the full extent of the compromise. For this goal, having access to and knowledge of the environment is of paramount importance. For instance, knowing if the EC2 instances targeted by the `ec2-instance-connect:SendSSHPublicKey` call were accessible from the internet is necessary to determine if they were compromised as well. Similarly, we need to know if all S3 buckets in the account have S3 Data Events enabled to identify what data was downloaded.
 Then, once we understand the full scope and impact of the attack, we can remove the malicious and compromised IAM users to cut off attacker access to our environment. This is typically done by removing malicious IAM users and compromised access keys. AWS also has a playbook available.
 After that, we need to get rid of the malicious infrastructure. Once this is done, we can use the AWS Resource Explorer to confirm that no unexpected ECS cluster remains, across all regions:
