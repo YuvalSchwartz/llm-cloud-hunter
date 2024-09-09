@@ -108,7 +108,7 @@ class Preprocessor:
                 paragraph_index_to_image_urls[i] = image_urls
 
         with ThreadPoolExecutor() as executor:
-            future_to_paragraph_index_and_image_url = {executor.submit(self.image_analyzer.analyze_image, paragraphs[paragraph_index], image_url): (paragraph_index, image_url) for paragraph_index, image_urls in paragraph_index_to_image_urls.items() for image_url in image_urls}
+            future_to_paragraph_index_and_image_url = {executor.submit(self.image_analyzer.analyze_image, paragraphs[paragraph_index], len(image_urls), image_index, image_url): (paragraph_index, image_url) for paragraph_index, image_urls in paragraph_index_to_image_urls.items() for image_index, image_url in enumerate(image_urls)}
             for future in as_completed(future_to_paragraph_index_and_image_url):
                 paragraph_index, image_url = future_to_paragraph_index_and_image_url[future]
                 image_analysis = future.result()
@@ -143,7 +143,7 @@ class Preprocessor:
                         attack_case_paragraphs = Preprocessor._enhance_paragraphs(attack_case_paragraphs_and_levels)
                         if include_images:
                             logging.info(f'\t\tAnalyzing images')
-                            # markdown, paragraphs = self._analyze_images(markdowns[i], paragraphs)
+                            attack_case_markdown, attack_case_paragraphs = self._analyze_images(attack_case_markdown, attack_case_paragraphs)
                         logging.info(f'\t\tFiltering paragraphs')
                         attack_case_paragraphs = Preprocessor._filter_paragraphs(attack_case_paragraphs)
                         result.append((attack_case_markdown, attack_case_paragraphs))
@@ -153,12 +153,3 @@ class Preprocessor:
 
                 return result
         return None
-
-
-if __name__ == '__main__':
-    from dotenv import load_dotenv
-    load_dotenv()
-    url = 'https://www.lacework.com/blog/detecting-ai-resource-hijacking-with-composite-alerts'
-    # url = 'https://securitylabs.datadoghq.com/articles/tales-from-the-cloud-trenches-aws-activity-to-phishing/'
-    attack_cases = Preprocessor().preprocess_oscti(url, include_images=True)
-    print(attack_cases)

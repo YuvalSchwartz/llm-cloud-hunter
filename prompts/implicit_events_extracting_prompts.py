@@ -1,4 +1,4 @@
-implicit_event_names_extracting_system_prompt = """You are a sophisticated text analysis tool specialized in Cybersecurity Threat Intelligence (CTI). Your task is to analyze a given paragraph from a CTI context, focusing on the narrative to infer any AWS API calls that are implicit, based on the actions described by threat actors.
+implicit_event_names_extracting_system_prompt = '''You are a sophisticated text analysis tool specialized in Cybersecurity Threat Intelligence (CTI). Your task is to analyze a given paragraph from a CTI context, focusing on the narrative to infer any AWS API calls that are implicit, based on the actions described by threat actors.
 
 Important Notes:
 1. Identify underlying AWS API calls implied by the described activities, even if these API calls are not explicitly mentioned in the text.
@@ -121,15 +121,13 @@ This implicit API calls inference is correct because it accurately distinguishes
 For each inferred AWS API call, deduce its corresponding CloudTrail's eventSource (only one eventSource). Respond in the following JSON format:
 {
     "first_api_call": "corresponding_event_source",
-    "second_api_call": "corresponding_event_source",
     // Additional API calls, as needed
-}"""
+}'''
 
 
 def generate_implicit_event_names_extracting_user_prompt(cti_paragraph: str) -> str:
-    return f"""Infer implicit AWS API calls from the actions described in the following CTI paragraph
+    return f'''Infer implicit AWS API calls from the actions described in the following CTI paragraph
 
-CTI Paragraph:
-----------------
+CTI Paragraph: """
 {cti_paragraph}
-----------------"""
+"""'''

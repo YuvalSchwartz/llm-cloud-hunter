@@ -2,7 +2,6 @@ import json
 import logging
 import os
 import re
-from typing import Dict, List
 from openai import OpenAI
 from openai.types.chat import ChatCompletion
 
@@ -10,29 +9,28 @@ from prompts.ttp_classification_prompts import ttp_extracting_system_prompt, gen
 
 
 class TTPClassifier:
-    def __init__(self, model_name: str = None, api_key: str = None, temperature: float = 0.5):
-        self.model_name = model_name if model_name else "gpt-4o"
-        api_key = api_key if api_key else os.getenv('OPENAI_API_KEY')
-        self.client = OpenAI(api_key=api_key)
+    def __init__(self, model_name: str = 'chatgpt-4o-latest', api_key: str = None, temperature: float = 0.5):
+        self.model_name = model_name
+        self.client = OpenAI(api_key=api_key if api_key else os.getenv('OPENAI_API_KEY'))
         self.temperature = temperature
 
     @staticmethod
-    def _generate_ttp_classification_messages(event_to_source: Dict[str, str], paragraph: str) -> List[Dict[str, str]]:
+    def _generate_ttp_classification_messages(event_to_source: dict[str, str], paragraph: str) -> list[dict[str, str]]:
         return [
             {"role": "system", "content": ttp_extracting_system_prompt},
             {"role": "user", "content": generate_ttp_extracting_user_prompt(event_to_source, paragraph)}
         ]
 
-    def _send_ttp_classification_request(self, messages: List[Dict[str, str]]) -> ChatCompletion:
+    def _send_ttp_classification_request(self, messages: list[dict[str, str]]) -> ChatCompletion:
         return self.client.chat.completions.create(
             model=self.model_name,
             temperature=self.temperature,
-            response_format={"type": "json_object"},
-            messages=messages
+            messages=messages,
+            response_format={"type": "json_object"}
         )
 
     @staticmethod
-    def _reformat_event_to_ttps(event_to_ttps: Dict[str, Dict[str, str]]) -> Dict[str, Dict[str, str]]:
+    def _reformat_event_to_ttps(event_to_ttps: dict[str, dict[str, str]]) -> dict[str, dict[str, str]]:
         # Fix faulty event names
         event_to_ttps = {re.sub(r'\s*\(.*\)', '', event): ttps for event, ttps in event_to_ttps.items()}
 
@@ -73,7 +71,7 @@ class TTPClassifier:
 
         return event_to_ttps
 
-    def classify_api_call_ttp(self, event_to_source: Dict[str, str], paragraph: str) -> Dict[str, Dict[str, str]] | None:
+    def classify_api_call_ttp(self, event_to_source: dict[str, str], paragraph: str) -> dict[str, dict[str, str]] | None:
         messages = TTPClassifier._generate_ttp_classification_messages(event_to_source, paragraph)
 
         try:

@@ -7,8 +7,14 @@ image_transcription_system_prompt = '''You are an expert in analyzing images fro
 Important Note: Do not include any additional headings, descriptions, explanations, or context.'''
 
 
-def generate_image_transcription_user_prompt(paragraph: str) -> str:
+def generate_image_transcription_user_prompt(paragraph: str, number_of_images: int, image_index: int) -> str:
+    if number_of_images == 1:
+        parentheses_text = 'there is only one image in the paragraph'
+    else:
+        parentheses_text = f'there are {number_of_images} images in the paragraph, and this is image number {image_index + 1}'
+
     return f'''Transcribe the given CTI image.
 
-Here is the paragraph provided as context for the image:
-"{paragraph}"'''
+Here is the paragraph provided as context for the image ({parentheses_text}): """
+{paragraph}
+"""'''

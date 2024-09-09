@@ -1,7 +1,6 @@
 from utils import dump_yaml
-from typing import Dict
 
-rule_optimizing_system_prompt = """You are a sophisticated cybersecurity analysis tool specializing in the optimization of Sigma rules. Your task involves analyzing and refining a Sigma rule to enhance its correctness, accuracy, effectiveness, and efficiency. Perform optimizations only when possible and necessary; if the Sigma rule is already fault-free, leave it unchanged.
+rule_optimizing_system_prompt = '''You are a sophisticated cybersecurity analysis tool specializing in the optimization of Sigma rules. Your task involves analyzing and refining a Sigma rule to enhance its correctness, accuracy, effectiveness, and efficiency. Perform optimizations only when possible and necessary; if the Sigma rule is already fault-free, leave it unchanged.
 
 Sigma Rules Optimization Guidelines:
 1. Ensure the rule's logic and structure are correct and aligned with event types and condition parameters.
@@ -154,13 +153,12 @@ Do not add new rules, just optimize the one provided if possible. Respond in the
     "detection": {...},
     "falsepositives": ["..."],
     "level": "..."
-}"""
+}'''
 
 
-def generate_rule_optimizing_user_prompt(rule: Dict) -> str:
-    return f"""Optimize the following Sigma rule if possible.
+def generate_rule_optimizing_user_prompt(rule: dict) -> str:
+    return f'''Optimize the following Sigma rule if possible.
 
-Sigma Rule:
-----------------
+Sigma Rule: """
 {dump_yaml(rule)}
-----------------"""
+"""'''

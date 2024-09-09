@@ -1,6 +1,6 @@
-from typing import Dict, List
 from datetime import date
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from preprocessor import Preprocessor
 from paragraph_level_processor import ParagraphLevelProcessor
@@ -14,7 +14,7 @@ class LLMCloudHunter:
         self.oscti_level_processor = oscti_level_processor if oscti_level_processor else OSCTILevelProcessor()
 
     @staticmethod
-    def _add_metadata(rules: Dict | List[Dict], reference: str) -> Dict | List[Dict]:
+    def _add_metadata(rules: dict | list[dict], reference: str) -> dict | list[dict]:
         if isinstance(rules, dict):
             rules = [rules]
 
@@ -41,14 +41,27 @@ class LLMCloudHunter:
 
         return rules
 
-    def process_url(self, url: str) -> Dict | List[Dict]:
-        logging.info(f'Processing {url}')
-        logging.info(f'\tPreprocessing OSCTI')
-        markdown, paragraphs = self.preprocessor.preprocess_oscti(url)
+    def _process_attack_case(self, url: str, markdown: str, paragraphs: list[str]) -> dict | list[dict]:
         logging.info(f'\tProcessing paragraphs')
         rules = self.paragraph_level_processor.process_paragraphs(paragraphs)
         logging.info(f'\tProcessing rules')
         rules = self.oscti_level_processor.process_rules(rules, markdown)
+        logging.info(f'\tAdding metadata to rules')
         rules = self._add_metadata(rules, url)
 
         return rules
+
+    def process_url(self, url: str) -> list[tuple[dict | list[dict], int | None]]:
+        result = []
+        logging.info(f'Processing {url}')
+        logging.info(f'\tPreprocessing OSCTI')
+        attack_cases = self.preprocessor.preprocess_oscti(url)
+
+        with ThreadPoolExecutor() as executor:
+            future_to_attack_case = {executor.submit(self._process_attack_case, url, attack_case[0], attack_case[1]): case_index for case_index, attack_case in enumerate(attack_cases) if attack_case is not None}
+            for future in as_completed(future_to_attack_case):
+                case_number = future_to_attack_case[future] + 1 if len(attack_cases) > 1 else None
+                rules = future.result()
+                result.append((rules, case_number))
+
+        return result

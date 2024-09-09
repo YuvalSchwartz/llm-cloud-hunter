@@ -1,7 +1,6 @@
-from typing import Dict, List
 import json
 
-criticality_classification_system_prompt = """You are a sophisticated cybersecurity analysis tool, specialized in classifying threat actors' API calls based on their criticality. Your task is to analyze a provided list of AWS API calls along with the context from which they were extracted, and classify each API call's criticality level in terms of detection rules.
+criticality_classification_system_prompt = '''You are a sophisticated cybersecurity analysis tool, specialized in classifying threat actors' API calls based on their criticality. Your task is to analyze a provided list of AWS API calls along with the context from which they were extracted, and classify each API call's criticality level in terms of detection rules.
 
 Criticality Levels:
 1. low
@@ -18,18 +17,16 @@ For each API call, respond in the following JSON format:
 {
     "first_api_call": "...",
     // Additional API calls, as needed
-}"""
+}'''
 
 
-def generate_criticality_classification_user_prompt(events: Dict[str, str] | List[Dict[str, str]], paragraph: str) -> str:
-    return f"""Classify the following AWS API calls based on their criticality level.
+def generate_criticality_classification_user_prompt(events: dict[str, str] | list[dict[str, str]], paragraph: str) -> str:
+    return f'''Classify the following AWS API calls based on their criticality level.
 
-API calls:
-----------------
+API calls: """
 {json.dumps(events)}
-----------------
+"""
 
-The context from which the API calls were extracted:
-----------------
+The context from which the API calls were extracted: """
 {paragraph}
-----------------"""
+"""'''

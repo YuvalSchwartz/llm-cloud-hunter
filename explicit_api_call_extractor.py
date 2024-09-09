@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-from typing import Dict, List
 from openai import OpenAI
 from openai.types.chat import ChatCompletion
 
@@ -10,30 +9,29 @@ from utils import sanitize_event
 
 
 class ExplicitApiCallExtractor:
-    def __init__(self, model_name: str = None, api_key: str = None, temperature: float = 0, number_of_runs=3, threshold=2):
-        self.model_name = model_name if model_name else "gpt-4o"
-        api_key = api_key if api_key else os.getenv('OPENAI_API_KEY')
-        self.client = OpenAI(api_key=api_key)
+    def __init__(self, model_name: str = 'chatgpt-4o-latest', api_key: str = None, temperature: float = 0, number_of_runs: int = 3, threshold: int = 2):
+        self.model_name = model_name
+        self.client = OpenAI(api_key=api_key if api_key else os.getenv('OPENAI_API_KEY'))
         self.temperature = temperature
         self.number_of_runs = number_of_runs
         self.threshold = threshold
 
     @staticmethod
-    def _generate_explicit_api_call_extraction_messages(paragraph: str) -> List[Dict[str, str]]:
+    def _generate_explicit_api_call_extraction_messages(paragraph: str) -> list[dict[str, str]]:
         return [
             {"role": "system", "content": explicit_event_names_extracting_system_prompt},
             {"role": "user", "content": generate_explicit_event_names_extracting_user_prompt(paragraph)}
         ]
 
-    def _send_explicit_api_call_extraction_request(self, messages: List[Dict[str, str]]) -> ChatCompletion:
+    def _send_explicit_api_call_extraction_request(self, messages: list[dict[str, str]]) -> ChatCompletion:
         return self.client.chat.completions.create(
             model=self.model_name,
             temperature=self.temperature,
-            response_format={"type": "json_object"},
-            messages=messages
+            messages=messages,
+            response_format={"type": "json_object"}
         )
 
-    def extract_explicit_api_calls(self, paragraph: str) -> Dict[str, str] | None:
+    def extract_explicit_api_calls(self, paragraph: str) -> dict[str, str] | None:
         final_explicit_event_to_source = {}
         explicit_events_counter = {}
 

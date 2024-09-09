@@ -1,6 +1,5 @@
 import re
-from typing import Dict, List, Tuple, Set, Any
-from sentence_transformers import SentenceTransformer
+# from sentence_transformers import SentenceTransformer
 import yaml
 
 tactic_name_to_id = {"Reconnaissance": "TA0043", "Resource Development": "TA0042", "Initial Access": "TA0001",
@@ -483,7 +482,7 @@ technique_id_to_subtechniques = {"T1595": {"001": "Scanning IP Blocks", "002": "
 #     return similarities[0][1].item()
 
 
-def get_ttps(tags: List[str]) -> Tuple[Set[str], Set[str], Set[str]]:
+def get_ttps(tags: list[str]) -> tuple[set[str], set[str], set[str]]:
     tactics, techniques, subtechniques = set(), set(), set()
 
     for tag in tags:
@@ -506,7 +505,7 @@ def get_ttps(tags: List[str]) -> Tuple[Set[str], Set[str], Set[str]]:
     return tactics, techniques, subtechniques
 
 
-def extract_logsource_data(logsource: Dict) -> tuple[set[str], set[str], set[str], set[str], set[Tuple[str, str]], set[Tuple[str, str]]]:
+def extract_logsource_data(logsource: dict) -> tuple[set[str], set[str], set[str], set[str], set[tuple[str, str]], set[tuple[str, str]]]:
     product_field_names, service_field_names = set(), set()
     products, services = set(), set()
     product_field_names_and_products, service_field_names_and_services = set(), set()
@@ -560,7 +559,7 @@ def extract_logsource_data(logsource: Dict) -> tuple[set[str], set[str], set[str
 #     return support, (precision, recall, f1_score)
 
 
-def add_to_sets(key: str, value: str | List[str], keys_set: Set[str], values_set: Set[str], keys_and_values_set: Set[Tuple[str, str]]) -> None:
+def add_to_sets(key: str, value: str | list[str], keys_set: set[str], values_set: set[str], keys_and_values_set: set[tuple[str, str]]) -> None:
     if key.endswith('|contains'):
         key = key[:-9]
         prefix, suffix = '*', '*'
@@ -583,7 +582,7 @@ def add_to_sets(key: str, value: str | List[str], keys_set: Set[str], values_set
         keys_and_values_set.update((key, f'{prefix}{item}{suffix}') for item in value)
 
 
-def extract_apis(detection: Dict) -> Tuple[Set[str], Set[str], Set[str], Set[str], Set[Tuple[str, str]], Set[Tuple[str, str]]]:
+def extract_apis(detection: dict) -> tuple[set[str], set[str], set[str], set[str], set[tuple[str, str]], set[tuple[str, str]]]:
     api_name_field_names, api_source_field_names = set(), set()
     api_names, api_sources = set(), set()
     api_name_field_names_and_api_names, api_source_field_names_and_api_sources = set(), set()
@@ -612,7 +611,7 @@ def extract_apis(detection: Dict) -> Tuple[Set[str], Set[str], Set[str], Set[str
     return api_name_field_names, api_source_field_names, api_names, api_sources, api_name_field_names_and_api_names, api_source_field_names_and_api_sources
 
 
-def extract_ioc(detection: Dict) -> Tuple[Set[str], Set[str], Set[str], Set[str], Set[Tuple[str, str]], Set[Tuple[str, str]]]:
+def extract_ioc(detection: dict) -> tuple[set[str], set[str], set[str], set[str], set[tuple[str, str]], set[tuple[str, str]]]:
     ip_address_field_names, user_agent_field_names = set(), set()
     ip_addresses, user_agents = set(), set()
     ip_address_field_names_and_ip_addresses, user_agent_field_names_and_user_agents = set(), set()
@@ -639,7 +638,7 @@ def extract_ioc(detection: Dict) -> Tuple[Set[str], Set[str], Set[str], Set[str]
     return ip_address_field_names, user_agent_field_names, ip_addresses, user_agents, ip_address_field_names_and_ip_addresses, user_agent_field_names_and_user_agents
 
 
-def extract_others(detection: Dict) -> Tuple[Set[str], Set[str], Set[Tuple[str, str]]]:
+def extract_others(detection: dict) -> tuple[set[str], set[str], set[tuple[str, str]]]:
     other_field_names = set()
     others = set()
     other_field_names_and_others = set()
@@ -695,7 +694,7 @@ def extract_others(detection: Dict) -> Tuple[Set[str], Set[str], Set[Tuple[str, 
 #     return results
 
 
-def extract_entities_and_relationships(rules: Dict | List[Dict]) -> tuple[dict[str, set[str]], dict[str, set[Tuple[str, str]]]]:
+def extract_entities_and_relationships(rules: dict | list[dict]) -> tuple[dict[str, set[str]], dict[str, set[tuple[str, str]]]]:
     if isinstance(rules, dict):
         rules = [rules]
 

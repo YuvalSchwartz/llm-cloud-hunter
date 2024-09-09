@@ -197,7 +197,7 @@ class Parser:
                 return previous_navigable_string
 
     @staticmethod
-    def _get_next_outer_element(element: Tag, tag_names_to_skip: set[str] = None, ) -> Tag | NavigableString | None:
+    def _get_next_outer_element(element: Tag, tag_names_to_skip: set[str] = None) -> Tag | NavigableString | None:
         next_element = element.next
 
         while True:
@@ -415,7 +415,7 @@ class Parser:
         return '\n'.join(lines)
 
     @staticmethod
-    def _parse_list_element(list_element: Tag, list_level: int) -> (str, int, int):
+    def _parse_list_element(list_element: Tag, list_level: int) -> tuple[str, int, int]:
         if list_element.name == 'dl' and Parser._is_descendant_of_name(list_element, {'ul', 'ol'}):
             list_level -= 1
         ordered_list_item_count = 1

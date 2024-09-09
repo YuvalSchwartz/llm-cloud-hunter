@@ -1,7 +1,6 @@
 import logging
 import os
 from datetime import datetime
-from typing import List
 
 import yaml
 
@@ -45,7 +44,7 @@ def setup_logging() -> None:
     selenium_logger.setLevel(logging.WARNING)
 
 
-def dump_yaml(yaml_object: dict | List[dict]) -> str:
+def dump_yaml(yaml_object: dict | list[dict]) -> str:
     formatted_yaml = yaml.safe_dump(yaml_object, default_flow_style=False, sort_keys=False, width=1000).strip()
 
     # Manual adjustment to indent lines starting with "-"
