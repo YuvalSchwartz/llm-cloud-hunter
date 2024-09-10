@@ -1,4 +1,5 @@
 import os
+import time
 from dotenv import load_dotenv
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -70,4 +71,7 @@ if __name__ == '__main__':
     # urls.append('https://aws.amazon.com/blogs/security/two-real-life-examples-of-why-limiting-permissions-works-lessons-from-aws-cirt/')
     # urls.append('https://permiso.io/blog/s/unmasking-guivil-new-cloud-threat-actor/')
 
+    start_time = time.time()
     main(urls)
+    end_time = time.time()
+    print(f'Total time taken: {end_time - start_time} seconds')

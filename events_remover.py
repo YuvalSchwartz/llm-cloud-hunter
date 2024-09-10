@@ -1,11 +1,11 @@
 import json
 import logging
 import os
-
 from openai import OpenAI
 from openai.types.chat import ChatCompletion
 
 from prompts.events_removing_prompts import events_removing_system_prompt, generate_events_removing_user_prompt
+from utils import validate_rule
 
 
 class EventsRemover:
@@ -29,7 +29,7 @@ class EventsRemover:
             response_format={"type": "json_object"}
         )
 
-    def remove_events(self, event_names_list: list[str], rule: dict[str, ]) -> dict | None:
+    def remove_events(self, event_names_list: list[str], rule: dict) -> dict | None:
         messages = EventsRemover._generate_messages(event_names_list, rule)
 
         try:
@@ -40,5 +40,6 @@ class EventsRemover:
 
         response = response.choices[0].message.content
         rule = json.loads(response)
+        rule = validate_rule(rule)
 
         return rule

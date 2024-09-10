@@ -33,7 +33,55 @@ class IOCExtractor:
             response_format=IOC
         )
 
-    def extract_iocs(self, markdown: str) -> dict[str, str | list[str]] | None:
+    @staticmethod
+    def _validate_ip_addresses(ip_addresses: list[str]) -> str | list[str]:
+        def _is_valid_ip_address(ip_address: str) -> bool:
+            host_bytes = ip_address.split('.')
+
+            # Check if there are exactly 4 segments
+            if len(host_bytes) != 4:
+                return False
+
+            # Check if all segments are valid integers in the range 0-255
+            for byte in host_bytes:
+                if not byte.isdigit() or not 0 <= int(byte) <= 255:
+                    return False
+
+            return True
+        seen = set()
+        results = []
+        for ip_address in ip_addresses:
+            ip_address = ip_address.replace('[', '').replace(']', '').replace('(', '').replace(')', '').replace('"', '').replace("'", '').strip()
+            if _is_valid_ip_address(ip_address) and ip_address not in seen:
+                seen.add(ip_address)
+                results.append(ip_address)
+
+        if len(results) == 1:
+            return results[0]
+        return results
+
+    @staticmethod
+    def _validate_user_agents(user_agents: list[str]) -> str | list[str]:
+        seen = set()
+        results = []
+        for user_agent in user_agents:
+            user_agent = user_agent.strip('[]()\"\' ')
+            if user_agent not in seen and user_agent != 'AWS Internal':  # TODO: Implement custom integration for "AWS Internal"
+                seen.add(user_agent)
+                results.append(user_agent)
+
+        if len(results) == 1:
+            return results[0]
+        return results
+
+    @staticmethod
+    def _validate_ioc(ioc: IOC) -> IOC:
+        ioc.ip_addresses = IOCExtractor._validate_ip_addresses(ioc.ip_addresses)
+        ioc.user_agents = IOCExtractor._validate_user_agents(ioc.user_agents)
+
+        return ioc
+
+    def extract_iocs(self, markdown: str) -> IOC | None:
         messages = IOCExtractor._generate_iocs_extraction_messages(markdown)
 
         try:
@@ -42,4 +90,7 @@ class IOCExtractor:
             logging.error(f"Error extracting IOCs: {e}")
             return None
 
-        return response.choices[0].message.parsed
+        ioc = response.choices[0].message.parsed
+        ioc = IOCExtractor._validate_ioc(ioc)
+
+        return ioc

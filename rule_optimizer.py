@@ -41,12 +41,14 @@ class RuleOptimizer:
 
         response = response.choices[0].message.content
         rule = json.loads(response)
+        rule = validate_rule(rule)
 
         return rule
 
     def optimize_rules(self, rules: dict | list[dict]) -> list[dict] | None:
         if isinstance(rules, dict):
             rules = [rules]
+
         results = [None] * len(rules)
         with ThreadPoolExecutor() as executor:
             future_to_index = {executor.submit(self._optimize_rule, rule): index for index, rule in enumerate(rules)}
@@ -55,8 +57,8 @@ class RuleOptimizer:
                 rule = future.result()
                 results[index] = rule
 
-        results = [validate_rule(result) for result in results if result is not None]
+        results = [result for result in results if result is not None]
+
         if results:
             return results
-
         return None
