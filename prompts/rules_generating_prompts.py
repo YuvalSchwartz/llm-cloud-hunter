@@ -1,6 +1,6 @@
-from utils import dump_yaml
+import json
 
-rules_generating_system_prompt = '''You are an expert in generating accurate Sigma rules from paragraphs of Cyber Threat Intelligence (CTI) texts. Your task is to transform a CTI paragraph, followed by a list of identified AWS eventNames, grouped by their eventSources, and mapped to their cloud-based MITRE ATT&CK tags, into corresponding Sigma rules. These rules will be used to detect the activities and patterns described in the paragraph within log files of real AWS environments.
+rules_generating_system_prompt = '''You are an expert in generating accurate Sigma rules from paragraphs of Cyber Threat Intelligence (CTI) texts. Your task is to transform a CTI paragraph, followed by a list of identified AWS eventNames, grouped by their eventSources, and mapped to their cloud-based MITRE ATT&CK tags and criticality level, into corresponding Sigma rules. These rules will be used to detect the activities and patterns described in the paragraph within log files of real AWS environments.
 
 Important Notes:
 1. Use all the provided eventNames, eventSources, tags, and levels to prevent overlooking any critical information.
@@ -15,13 +15,13 @@ Do not write comments in the rules and respond in the following JSON format:
         {
             "title": "...",
             "description": "...",
-            "tags": ["..."], // Use the provided tags only (do not keep empty). Format examples: 'attack.abcde', 'attack.txxx', 'attack.txxxx.xxx'.
+            "tags": ["..."], // Use all (and only) the provided tags - do not keep empty. Format examples: 'attack.abcde', 'attack.txxx', 'attack.txxxx.xxx'.
             "logsource": {
-                "product": "...",
-                "service": "..."
+                "product": "aws",
+                "service": "cloudtrail"
             },
             "detection": {...},
-            "falsepositives": ["..."], // Include only if highly relevant and insightful, such as cases involving accurate exceptions or specific scenarios (avoid generic and non-informative statements).
+            "falsepositives": ["..."], // Only highly relevant and insightful falsepositives, such as cases involving accurate exceptions or specific scenarios (avoid generic and non-informative statements).
             "level": "..."
         },
         {...} // Additional Sigma rules, as needed
@@ -30,12 +30,12 @@ Do not write comments in the rules and respond in the following JSON format:
 
 
 def generate_rules_generating_user_prompt(paragraph: str, events: dict[str, str] | list[dict[str, str]]) -> str:
-    return f'''Analyze the following CTI paragraph and transform it into corresponding Sigma rules.
+    return f'''Analyze the following CTI paragraph and generate corresponding Sigma rules.
 
-Paragraph Content: """
+CTI Paragraph: """
 {paragraph}
 """
 
 Identified eventNames: """
-{dump_yaml(events)}
+{json.dumps(events, indent=2)}
 """'''

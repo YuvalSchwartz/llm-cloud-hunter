@@ -5,6 +5,7 @@ import logging
 from openai.types.chat import ChatCompletion
 
 from prompts.rules_generating_prompts import rules_generating_system_prompt, generate_rules_generating_user_prompt
+from utils import validate_rule
 
 
 class RuleGenerator:
@@ -40,7 +41,11 @@ class RuleGenerator:
         response = response.choices[0].message.content
         response = json.loads(response)
         rules = response['sigma_rules']
-        if isinstance(rules, list) and len(rules) == 1:
+
+        if isinstance(rules, dict):
+            rules = [rules]
+        rules = [validate_rule(rule) for rule in rules]
+        if len(rules) == 1:
             rules = rules[0]
 
         return rules

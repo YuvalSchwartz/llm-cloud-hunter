@@ -1,7 +1,7 @@
 import logging
 import os
+import re
 from datetime import datetime
-
 import yaml
 
 
@@ -56,7 +56,8 @@ def dump_yaml(yaml_object: dict | list[dict]) -> str:
     return formatted_yaml
 
 
-def sanitize_event(event: str) -> str:
+def validate_event(event: str) -> str:
+    event = re.sub(r'\([^)]*\)', '', event)
     if all([c.islower() for c in event if c.isalpha()]):
         splitted_event = event.split(' ')
         if len(splitted_event) == 3 and splitted_event[0] == 'aws':
@@ -72,10 +73,18 @@ def sanitize_event(event: str) -> str:
     return event
 
 
-def sanitize_rule(rule: dict) -> dict:
-    def sanitize_rule_detection(rule_detection: dict) -> None:
+def _reformat_detection_lists(detection: dict) -> None:
+    for key, value in detection.items():
+        if isinstance(value, dict):
+            _reformat_detection_lists(value)
+        elif isinstance(value, list) and len(value) == 1:
+            detection[key] = value[0]
+
+
+def _sanitize_rule(rule: dict) -> None:
+    def _sanitize_detection(detection: dict) -> None:
         keys_to_remove = []
-        for key, value in rule_detection.items():
+        for key, value in detection.items():
             lower_key = key.lower()
             if lower_key.endswith('id') or lower_key.endswith('arn') or lower_key.endswith('date') or lower_key.endswith('time') or lower_key == 'timeframe' or lower_key == 'awsregion' or lower_key.startswith('sourceipaddress') or lower_key.startswith('useragent') or lower_key == 'eventtype' or lower_key == 'resourcetype': # or lower_key == 'errorcode' or lower_key == 'errormessage'
                 keys_to_remove.append(key)
@@ -85,12 +94,12 @@ def sanitize_rule(rule: dict) -> dict:
                     keys_to_remove.append(key)
             elif isinstance(value, dict):
                 if value:
-                    sanitize_rule_detection(value)
+                    _sanitize_detection(value)
                 else:
                     keys_to_remove.append(key)
         for key in keys_to_remove:
-            if key in rule_detection:
-                del rule_detection[key]
+            if key in detection:
+                del detection[key]
 
     keys_to_remove = ['id', 'related', 'status', 'author', 'date', 'modified', 'references']
     for key in keys_to_remove:
@@ -106,6 +115,26 @@ def sanitize_rule(rule: dict) -> dict:
         if len(rule['falsepositives']) == 1 and rule['falsepositives'][0] in false_positives_to_remove:
             del rule['falsepositives']
 
-    sanitize_rule_detection(rule['detection'])
+    _sanitize_detection(rule['detection'])
+
+
+def _complete_missing_techniques(rule: dict) -> None:
+    ttps = rule['tags']
+    updated_ttps = []
+    for ttp in ttps:
+        updated_ttps.append(ttp)
+        ttp_lower = ttp.lower().replace('attack.', '')
+        if ttp_lower.startswith('t') and '.' in ttp_lower:
+                technique = 'attack.' + ttp_lower.split('.')[0]
+                if technique not in updated_ttps:
+                    updated_ttps.insert(len(updated_ttps) - 1, technique)
+
+    rule['tags'] = updated_ttps
+
+
+def validate_rule(rule: dict) -> dict:
+    _reformat_detection_lists(rule['detection'])
+    _sanitize_rule(rule)
+    _complete_missing_techniques(rule)
 
     return rule

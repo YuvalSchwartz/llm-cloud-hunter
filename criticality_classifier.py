@@ -5,6 +5,7 @@ from openai import OpenAI
 from openai.types.chat import ChatCompletion
 
 from prompts.criticality_classification_prompts import criticality_classification_system_prompt, generate_criticality_classification_user_prompt
+from utils import validate_event
 
 
 class CriticalityClassifier:
@@ -39,5 +40,6 @@ class CriticalityClassifier:
 
         response = response.choices[0].message.content
         event_to_criticality = json.loads(response)
+        event_to_criticality = {validate_event(event): criticality for event, criticality in event_to_criticality.items()}
 
         return event_to_criticality

@@ -5,7 +5,7 @@ from openai import OpenAI
 from openai.types.chat import ChatCompletion
 
 from prompts.implicit_events_extracting_prompts import implicit_event_names_extracting_system_prompt, generate_implicit_event_names_extracting_user_prompt
-from utils import sanitize_event
+from utils import validate_event
 
 
 class ImplicitApiCallExtractor:
@@ -32,12 +32,12 @@ class ImplicitApiCallExtractor:
         )
 
     def extract_implicit_api_calls(self, paragraph: str, explicit_event_to_source: dict[str, str]) -> dict[str, str] | None:
+        messages = ImplicitApiCallExtractor._generate_implicit_api_call_extraction_messages(paragraph)
+
         final_implicit_event_to_source = {}
         implicit_events_counter = {}
 
         for i in range(self.number_of_runs):
-            messages = ImplicitApiCallExtractor._generate_implicit_api_call_extraction_messages(paragraph)
-
             try:
                 response = self._send_implicit_api_call_extraction_request(messages)
             except Exception as e:
@@ -48,19 +48,15 @@ class ImplicitApiCallExtractor:
             implicit_event_to_source = json.loads(response)
 
             for implicit_event, source in implicit_event_to_source.items():
-                # sanitized_implicit_event = sanitize_event(implicit_event)
-                # if sanitized_implicit_event not in explicit_event_to_source:
-                #     final_implicit_event_to_source[sanitized_implicit_event] = source
-                #     implicit_events_counter[sanitized_implicit_event] = implicit_events_counter.get(sanitized_implicit_event, 0) + 1
-                if implicit_event not in explicit_event_to_source:
-                    final_implicit_event_to_source[implicit_event] = source
-                    implicit_events_counter[implicit_event] = implicit_events_counter.get(implicit_event, 0) + 1
+                reformatted_implicit_event = validate_event(implicit_event)
+                if reformatted_implicit_event not in explicit_event_to_source:
+                    final_implicit_event_to_source[reformatted_implicit_event] = source
+                    implicit_events_counter[reformatted_implicit_event] = implicit_events_counter.get(reformatted_implicit_event, 0) + 1
 
             if i == self.number_of_runs - self.threshold and not final_implicit_event_to_source:
                 break
 
         implicit_events_to_remove = [implicit_event for implicit_event, count in implicit_events_counter.items() if count < self.threshold]
-
         for implicit_event in implicit_events_to_remove:
             del final_implicit_event_to_source[implicit_event]
 

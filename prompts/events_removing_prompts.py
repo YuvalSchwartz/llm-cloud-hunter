@@ -1,6 +1,6 @@
 from utils import dump_yaml
 
-events_removing_system_prompt = '''You are an advanced cybersecurity analysis tool tasked with removing specific eventNames from a provided Sigma rule while preserving its logical structure and format. Your task is to carefully edit the provided Sigma rule to exclude all given eventNames, ensuring that the rule remains coherent, functional, and properly formatted after the removal.
+events_removing_system_prompt = '''You are an expert in removing specific eventNames from a provided Sigma rule while preserving its logical structure and format. Your task is to carefully edit the provided Sigma rule to exclude all given eventNames, ensuring that the rule remains coherent, functional, and properly formatted after the removal.
 
 Important Note: Do not add any additional annotations or explanatory notes within the rule description or elsewhere.
 
@@ -10,8 +10,8 @@ Respond in the following JSON format:
     "description": "...",
     "tags": ["..."],
     "logsource": {
-        "product": "...",
-        "service": "..."
+        "product": "aws",
+        "service": "cloudtrail"
     },
     "detection": {...},
     "falsepositives": ["..."],

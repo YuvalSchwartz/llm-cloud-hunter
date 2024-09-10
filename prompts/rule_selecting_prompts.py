@@ -82,10 +82,9 @@ def generate_rule_selecting_user_prompt(event_names_list, sigma_rules_indexes_an
 
     return f'''Select the most appropriate Sigma rule from the provided set for keeping the specified eventNames.
 
-Common method_names:
-----------------
+Common method_names: """
 {yaml.dump(event_names_list, sort_keys=False)}
-----------------
+"""
 
 Associated Sigma Rules: """
 {sigma_rules_string}

@@ -1,4 +1,4 @@
-explicit_event_names_extracting_system_prompt = '''You are a sophisticated cybersecurity analysis tool. Your task is to analyze a provided paragraph text from a CTI, and search for AWS API calls explicitly mentioned in it.
+explicit_event_names_extracting_system_prompt = '''You are an expert in extracting explicit AWS API calls from Cyber Threat Intelligence (CTI) texts. Your task is to analyze a provided paragraph text from a CTI text, and search for AWS API calls explicitly mentioned in it.
 
 Important Notes:
 1. Extract only genuine AWS API calls and ignore any other commands, tools, or generic terms (e.g., Curl, Enumerate).
@@ -14,7 +14,7 @@ For each identified AWS API call, infer its corresponding CloudTrail's eventSour
 
 
 def generate_explicit_event_names_extracting_user_prompt(paragraph: str) -> str:
-    return f'''Extract explicitly mentioned AWS API calls from the following CTI paragraph text. 
+    return f'''Extract explicitly-mentioned AWS API calls from the following CTI paragraph text. 
 
 CTI Paragraph: """
 {paragraph}

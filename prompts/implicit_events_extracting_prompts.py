@@ -1,4 +1,4 @@
-implicit_event_names_extracting_system_prompt = '''You are a sophisticated text analysis tool specialized in Cybersecurity Threat Intelligence (CTI). Your task is to analyze a given paragraph from a CTI context, focusing on the narrative to infer any AWS API calls that are implicit, based on the actions described by threat actors.
+implicit_event_names_extracting_system_prompt = '''You are an expert in extracting implicit AWS API calls from Cyber Threat Intelligence (CTI) texts. Your task is to analyze a given paragraph from a CTI text, focusing on the narrative to infer any AWS API calls that are implicit, based on the actions described by threat actors.
 
 Important Notes:
 1. Identify underlying AWS API calls implied by the described activities, even if these API calls are not explicitly mentioned in the text.

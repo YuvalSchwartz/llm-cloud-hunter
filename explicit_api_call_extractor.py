@@ -5,7 +5,7 @@ from openai import OpenAI
 from openai.types.chat import ChatCompletion
 
 from prompts.explicit_events_extracting_prompts import explicit_event_names_extracting_system_prompt, generate_explicit_event_names_extracting_user_prompt
-from utils import sanitize_event
+from utils import validate_event
 
 
 class ExplicitApiCallExtractor:
@@ -32,12 +32,12 @@ class ExplicitApiCallExtractor:
         )
 
     def extract_explicit_api_calls(self, paragraph: str) -> dict[str, str] | None:
+        messages = ExplicitApiCallExtractor._generate_explicit_api_call_extraction_messages(paragraph)
+
         final_explicit_event_to_source = {}
         explicit_events_counter = {}
 
         for i in range(self.number_of_runs):
-            messages = ExplicitApiCallExtractor._generate_explicit_api_call_extraction_messages(paragraph)
-
             try:
                 response = self._send_explicit_api_call_extraction_request(messages)
             except Exception as e:
@@ -48,19 +48,14 @@ class ExplicitApiCallExtractor:
             explicit_event_to_source = json.loads(response)
 
             for explicit_event, source in explicit_event_to_source.items():
-                # TODO: Uncomment the following line and comment the line after it
-                # sanitized_explicit_event = sanitize_event(explicit_event)
-                # final_explicit_event_to_source[sanitized_explicit_event] = source
-                # explicit_events_counter[sanitized_explicit_event] = explicit_events_counter.get(sanitized_explicit_event, 0) + 1
-                final_explicit_event_to_source[explicit_event] = source
-                explicit_events_counter[explicit_event] = explicit_events_counter.get(explicit_event, 0) + 1
-                # TODO: Uncomment the above line and comment the line before it
+                reformatted_explicit_event = validate_event(explicit_event)
+                final_explicit_event_to_source[reformatted_explicit_event] = source
+                explicit_events_counter[reformatted_explicit_event] = explicit_events_counter.get(reformatted_explicit_event, 0) + 1
 
             if i == self.number_of_runs - self.threshold + 1 and not explicit_event_to_source:
                 break
 
         explicit_events_to_remove = [explicit_event for explicit_event, count in explicit_events_counter.items() if count < self.threshold]
-
         for explicit_event in explicit_events_to_remove:
             del final_explicit_event_to_source[explicit_event]
 

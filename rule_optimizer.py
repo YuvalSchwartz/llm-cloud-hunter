@@ -6,6 +6,7 @@ from openai import OpenAI
 from openai.types.chat import ChatCompletion
 
 from prompts.rule_optimizing_prompts import rule_optimizing_system_prompt, generate_rule_optimizing_user_prompt
+from utils import validate_rule
 
 
 class RuleOptimizer:
@@ -54,7 +55,7 @@ class RuleOptimizer:
                 rule = future.result()
                 results[index] = rule
 
-        results = [result for result in results if result is not None]
+        results = [validate_rule(result) for result in results if result is not None]
         if results:
             return results
 

@@ -12,7 +12,7 @@ class ImageClassification(BaseModel):
 
 
 class ImageClassifier:
-    def __init__(self, model_name: str = 'gpt-4o-2024-08-06', api_key: str = None, temperature: float = 0.85):
+    def __init__(self, model_name: str = 'gpt-4o-2024-08-06', api_key: str = None, temperature: float = 0.5):
         self.model_name = model_name
         self.client = OpenAI(api_key=api_key if api_key else os.getenv('OPENAI_API_KEY'))
         self.temperature = temperature
