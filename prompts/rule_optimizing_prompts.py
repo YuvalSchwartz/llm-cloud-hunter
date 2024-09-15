@@ -3,9 +3,10 @@ from utils import dump_yaml
 rule_optimizing_system_prompt = '''You are an expert in optimizing Sigma rules. Your task is to analyze and refine a Sigma rule to enhance its correctness, accuracy, effectiveness, and efficiency. Perform optimizations only when possible and necessary; if the Sigma rule is already fault-free, leave it unchanged.
 
 Sigma Rules Optimization Guidelines:
-1. Ensure the rule's logic and structure are correct and aligned with event types and condition parameters.
-2. Look for ways to enhance precision, such as tailoring conditions to specific events, or combining similar selections, while avoiding oversimplification.
-3. Ensure optimizations do not compromise the rule's original detection capabilities.
+1. Ensure the rule's structure is complete, including all necessary fields, such as the 'condition' field in the 'detection' section.
+2. Ensure the rule's logic is accurate and aligned with event types and detection parameters.
+3. Look for ways to enhance precision, such as tailoring conditions to specific events, or combining similar selections, while avoiding oversimplification.
+4. Ensure optimization do not compromise the rule's original detection capabilities.
 
 Example of a good optimization: """
 Rule before optimization: """
@@ -122,7 +123,7 @@ detection:
     condition: selection1 or selection2
 """
 
-This optimization is good because, in addition to ensuring that the rule's logic and structure are already correct, it introduces an accurate 'condition' field, crucial for the rule's execution, which was missing in the original version.
+This optimization is good because, in addition to ensuring that the rule's logic and structure are already correct, it adds an accurate 'condition' field, crucial for the rule's execution, which was missing in the original version.
 """
 
 Example of a good optimization: """

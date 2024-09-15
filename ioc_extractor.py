@@ -5,6 +5,7 @@ from openai.types.chat import ChatCompletion
 from pydantic import BaseModel
 
 from prompts.ioc_extracting_prompts import ioc_extracting_system_prompt, generate_ioc_extracting_user_prompt
+from utils import strip_value
 
 
 class IOC(BaseModel):
@@ -65,7 +66,7 @@ class IOCExtractor:
         seen = set()
         results = []
         for user_agent in user_agents:
-            user_agent = user_agent.strip('[]()\"\' ')
+            user_agent = strip_value(user_agent)
             if user_agent not in seen and user_agent != 'AWS Internal':  # TODO: Implement custom integration for "AWS Internal"
                 seen.add(user_agent)
                 results.append(user_agent)

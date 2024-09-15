@@ -2,8 +2,9 @@ ioc_extracting_system_prompt = '''You are an expert in extracting Indicators of 
 
 Important Notes:
 1. Focus on the paragraph usually located at the end of the document under a corresponding heading, where IoCs are listed.
-2. Ensure that the extracted IoCs match the format (or part of it) found in log records. For example, convert general terms like "AWS Golang SDK" to "aws-sdk-go/".
-3. Be thorough and ensure that no IoC is missed.'''
+2. Ensure that the extracted IoCs match the format (or part of it) found in AWS log records. For example, convert general terms like "AWS Golang SDK" to "aws-sdk-go/".
+3. Avoid extracting duplications or redundant versions of the same IoC.
+4. Be thorough and ensure that no IoC is missed.'''
 
 # Respond in the following JSON format (if no IoCs are found, return an empty object - {}):
 # {

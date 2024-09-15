@@ -51,9 +51,9 @@ def main(urls: str | list[str]) -> None:
 
 if __name__ == '__main__':
     urls = []
-    urls.append('https://permiso.io/blog/s/anatomy-of-attack-exposed-keys-to-crypto-mining/')
+    # urls.append('https://permiso.io/blog/s/anatomy-of-attack-exposed-keys-to-crypto-mining/')
     # urls.append('https://expel.com/blog/behind-the-scenes-expel-soc-alert-aws/')
-    # urls.append('https://sysdig.com/blog/cloud-breach-terraform-data-theft/')
+    urls.append('https://sysdig.com/blog/cloud-breach-terraform-data-theft/')
     # urls.append('https://unit42.paloaltonetworks.com/compromised-cloud-compute-credentials/')
     # urls.append('https://www.lacework.com/blog/detecting-ai-resource-hijacking-with-composite-alerts/')
     # urls.append('https://expel.com/blog/finding-evil-in-aws/')
@@ -74,4 +74,6 @@ if __name__ == '__main__':
     start_time = time.time()
     main(urls)
     end_time = time.time()
-    print(f'Total time taken: {end_time - start_time} seconds')
+    minutes = int((end_time - start_time) / 60)
+    seconds = round((end_time - start_time) - (minutes * 60))
+    print(f'Total time taken: {minutes:02d}:{seconds:02d}')

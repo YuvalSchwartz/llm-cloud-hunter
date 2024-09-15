@@ -1,6 +1,7 @@
 import logging
 import re
 from collections import Counter
+from copy import deepcopy
 
 from rule_optimizer import RuleOptimizer
 from rule_selector import RuleSelector
@@ -24,21 +25,19 @@ class OSCTILevelProcessor:
         def extract_event_names_recursive(d: dict) -> None:
             for key, value in d.items():
                 if key == 'eventName':
-                    if isinstance(value, dict):
-                        continue
+                    if isinstance(value, str) and value not in seen:
+                        event_names.append(value)
+                        seen.add(value)
                     if isinstance(value, list):
                         for item in value:
                             if item not in seen:
                                 event_names.append(item)
                                 seen.add(item)
-                    else:
-                        if value not in seen:
-                            event_names.append(value)
-                            seen.add(value)
                 elif isinstance(value, dict):
                     extract_event_names_recursive(value)
 
         extract_event_names_recursive(rule['detection'])
+
         return event_names
 
     @staticmethod
@@ -93,20 +92,30 @@ class OSCTILevelProcessor:
         if ioc.ip_addresses or ioc.user_agents:
             for rule in rules:
                 if ioc.ip_addresses:
-                    rule['detection']["selection_ioc_ip"] = {"sourceIPAddress": ioc.ip_addresses}
+                    rule['detection']["selection_ioc_ip"] = {"sourceIPAddress": deepcopy(ioc.ip_addresses)}
                 if ioc.user_agents:
-                    rule['detection']["selection_ioc_ua"] = {"userAgent|contains": ioc.user_agents}
+                    rule['detection']["selection_ioc_ua"] = {"userAgent|contains": deepcopy(ioc.user_agents)}
 
-                if 'condition' in rule['detection']:
-                    condition = rule['detection']['condition']
-                    condition = f"({condition})" if bool(re.search(r'^(\w+)(?: or \w+)+$', condition)) else condition
-                    del rule['detection']['condition']
-                    if ioc.ip_addresses and ioc.user_agents:
-                        rule['detection']['condition'] = f"{condition} and (selection_ioc_ip or selection_ioc_ua)"
-                    elif ioc.ip_addresses and not ioc.user_agents:
-                        rule['detection']['condition'] = f"{condition} and selection_ioc_ip"
-                    elif not ioc.ip_addresses and ioc.user_agents:
-                        rule['detection']['condition'] = f"{condition} and selection_ioc_ua"
+                # if 'condition' in rule['detection']:
+                #     condition = rule['detection']['condition']
+                #     condition = f"({condition})" if bool(re.search(r'^(\w+)(?: or \w+)+$', condition)) else condition
+                #     del rule['detection']['condition']
+                #     if ioc.ip_addresses and ioc.user_agents:
+                #         rule['detection']['condition'] = f"{condition} and (selection_ioc_ip or selection_ioc_ua)"
+                #     elif ioc.ip_addresses and not ioc.user_agents:
+                #         rule['detection']['condition'] = f"{condition} and selection_ioc_ip"
+                #     elif not ioc.ip_addresses and ioc.user_agents:
+                #         rule['detection']['condition'] = f"{condition} and selection_ioc_ua"
+
+                condition = rule['detection']['condition']
+                condition = f"({condition})" if bool(re.search(r'^(\w+)(?: or \w+)+$', condition)) else condition
+                del rule['detection']['condition']
+                if ioc.ip_addresses and ioc.user_agents:
+                    rule['detection']['condition'] = f"{condition} and (selection_ioc_ip or selection_ioc_ua)"
+                elif ioc.ip_addresses and not ioc.user_agents:
+                    rule['detection']['condition'] = f"{condition} and selection_ioc_ip"
+                elif not ioc.ip_addresses and ioc.user_agents:
+                    rule['detection']['condition'] = f"{condition} and selection_ioc_ua"
 
         if len(rules) == 1:
             rules = rules[0]

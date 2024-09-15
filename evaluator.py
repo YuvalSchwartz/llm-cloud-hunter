@@ -1,200 +1,8 @@
+import os
 import re
-# from sentence_transformers import SentenceTransformer
 import yaml
 
-tactic_name_to_id = {"Reconnaissance": "TA0043", "Resource Development": "TA0042", "Initial Access": "TA0001",
-                     "Execution": "TA0002", "Persistence": "TA0003", "Privilege Escalation": "TA0004",
-                     "Defense Evasion": "TA0005", "Credential Access": "TA0006", "Discovery": "TA0007",
-                     "Lateral Movement": "TA0008", "Collection": "TA0009", "Command and Control": "TA0011",
-                     "Exfiltration": "TA0010", "Impact": "TA0040"}
-
-technique_id_to_name = {"T1595": "Active Scanning", "T1592": "Gather Victim Host Information",
-                        "T1589": "Gather Victim Identity Information", "T1590": "Gather Victim Network Information",
-                        "T1591": "Gather Victim Org Information", "T1598": "Phishing for Information",
-                        "T1597": "Search Closed Sources", "T1596": "Search Open Technical Databases",
-                        "T1593": "Search Open Websites/Domains", "T1594": "Search Victim-Owned Websites",
-                        "T1650": "Acquire Access", "T1583": "Acquire Infrastructure", "T1586": "Compromise Accounts",
-                        "T1584": "Compromise Infrastructure", "T1587": "Develop Capabilities",
-                        "T1585": "Establish Accounts", "T1588": "Obtain Capabilities", "T1608": "Stage Capabilities",
-                        "T1659": "Content Injection", "T1189": "Drive-by Compromise",
-                        "T1190": "Exploit Public-Facing Application", "T1133": "External Remote Services",
-                        "T1200": "Hardware Additions", "T1566": "Phishing",
-                        "T1091": "Replication Through Removable Media", "T1195": "Supply Chain Compromise",
-                        "T1199": "Trusted Relationship", "T1078": "Valid Accounts",
-                        "T1651": "Cloud Administration Command", "T1059": "Command and Scripting Interpreter",
-                        "T1609": "Container Administration Command", "T1610": "Deploy Container",
-                        "T1203": "Exploitation for Client Execution", "T1559": "Inter-Process Communication",
-                        "T1106": "Native API", "T1053": "Scheduled Task/Job", "T1648": "Serverless Execution",
-                        "T1129": "Shared Modules", "T1072": "Software Deployment Tools", "T1569": "System Services",
-                        "T1204": "User Execution", "T1047": "Windows Management Instrumentation",
-                        "T1098": "Account Manipulation", "T1197": "BITS Jobs",
-                        "T1547": "Boot or Logon Autostart Execution", "T1037": "Boot or Logon Initialization Scripts",
-                        "T1176": "Browser Extensions", "T1554": "Compromise Client Software Binary",
-                        "T1136": "Create Account", "T1543": "Create or Modify System Process",
-                        "T1546": "Event Triggered Execution", "T1574": "Hijack Execution Flow",
-                        "T1525": "Implant Internal Image", "T1556": "Modify Authentication Process",
-                        "T1137": "Office Application Startup", "T1653": "Power Settings", "T1542": "Pre-OS Boot",
-                        "T1505": "Server Software Component", "T1205": "Traffic Signaling",
-                        "T1548": "Abuse Elevation Control Mechanism", "T1134": "Access Token Manipulation",
-                        "T1484": "Domain Policy Modification", "T1611": "Escape to Host",
-                        "T1068": "Exploitation for Privilege Escalation", "T1055": "Process Injection",
-                        "T1612": "Build Image on Host", "T1622": "Debugger Evasion",
-                        "T1140": "Deobfuscate/Decode Files or Information", "T1006": "Direct Volume Access",
-                        "T1480": "Execution Guardrails", "T1211": "Exploitation for Defense Evasion",
-                        "T1222": "File and Directory Permissions Modification", "T1564": "Hide Artifacts",
-                        "T1562": "Impair Defenses", "T1656": "Impersonation", "T1070": "Indicator Removal",
-                        "T1202": "Indirect Command Execution", "T1036": "Masquerading",
-                        "T1578": "Modify Cloud Compute Infrastructure", "T1112": "Modify Registry",
-                        "T1601": "Modify System Image", "T1599": "Network Boundary Bridging",
-                        "T1027": "Obfuscated Files or Information", "T1647": "Plist File Modification",
-                        "T1620": "Reflective Code Loading", "T1207": "Rogue Domain Controller", "T1014": "Rootkit",
-                        "T1553": "Subvert Trust Controls", "T1218": "System Binary Proxy Execution",
-                        "T1216": "System Script Proxy Execution", "T1221": "Template Injection",
-                        "T1127": "Trusted Developer Utilities Proxy Execution",
-                        "T1535": "Unused/Unsupported Cloud Regions", "T1550": "Use Alternate Authentication Material",
-                        "T1497": "Virtualization/Sandbox Evasion", "T1600": "Weaken Encryption",
-                        "T1220": "XSL Script Processing", "T1557": "Adversary-in-the-Middle", "T1110": "Brute Force",
-                        "T1555": "Credentials from Password Stores", "T1212": "Exploitation for Credential Access",
-                        "T1187": "Forced Authentication", "T1606": "Forge Web Credentials", "T1056": "Input Capture",
-                        "T1111": "Multi-Factor Authentication Interception",
-                        "T1621": "Multi-Factor Authentication Request Generation", "T1040": "Network Sniffing",
-                        "T1003": "OS Credential Dumping", "T1528": "Steal Application Access Token",
-                        "T1649": "Steal or Forge Authentication Certificates",
-                        "T1558": "Steal or Forge Kerberos Tickets", "T1539": "Steal Web Session Cookie",
-                        "T1552": "Unsecured Credentials", "T1087": "Account Discovery",
-                        "T1010": "Application Window Discovery", "T1217": "Browser Information Discovery",
-                        "T1580": "Cloud Infrastructure Discovery", "T1538": "Cloud Service Dashboard",
-                        "T1526": "Cloud Service Discovery", "T1619": "Cloud Storage Object Discovery",
-                        "T1613": "Container and Resource Discovery", "T1652": "Device Driver Discovery",
-                        "T1482": "Domain Trust Discovery", "T1083": "File and Directory Discovery",
-                        "T1615": "Group Policy Discovery", "T1654": "Log Enumeration",
-                        "T1046": "Network Service Discovery", "T1135": "Network Share Discovery",
-                        "T1201": "Password Policy Discovery", "T1120": "Peripheral Device Discovery",
-                        "T1069": "Permission Groups Discovery", "T1057": "Process Discovery", "T1012": "Query Registry",
-                        "T1018": "Remote System Discovery", "T1518": "Software Discovery",
-                        "T1082": "System Information Discovery", "T1614": "System Location Discovery",
-                        "T1016": "System Network Configuration Discovery",
-                        "T1049": "System Network Connections Discovery", "T1033": "System Owner/User Discovery",
-                        "T1007": "System Service Discovery", "T1124": "System Time Discovery",
-                        "T1210": "Exploitation of Remote Services", "T1534": "Internal Spearphishing",
-                        "T1570": "Lateral Tool Transfer", "T1563": "Remote Service Session Hijacking",
-                        "T1021": "Remote Services", "T1080": "Taint Shared Content", "T1560": "Archive Collected Data",
-                        "T1123": "Audio Capture", "T1119": "Automated Collection", "T1185": "Browser Session Hijacking",
-                        "T1115": "Clipboard Data", "T1530": "Data from Cloud Storage",
-                        "T1602": "Data from Configuration Repository", "T1213": "Data from Information Repositories",
-                        "T1005": "Data from Local System", "T1039": "Data from Network Shared Drive",
-                        "T1025": "Data from Removable Media", "T1074": "Data Staged", "T1114": "Email Collection",
-                        "T1113": "Screen Capture", "T1125": "Video Capture", "T1071": "Application Layer Protocol",
-                        "T1092": "Communication Through Removable Media", "T1132": "Data Encoding",
-                        "T1001": "Data Obfuscation", "T1568": "Dynamic Resolution", "T1573": "Encrypted Channel",
-                        "T1008": "Fallback Channels", "T1105": "Ingress Tool Transfer", "T1104": "Multi-Stage Channels",
-                        "T1095": "Non-Application Layer Protocol", "T1571": "Non-Standard Port",
-                        "T1572": "Protocol Tunneling", "T1090": "Proxy", "T1219": "Remote Access Software",
-                        "T1102": "Web Service", "T1020": "Automated Exfiltration", "T1030": "Data Transfer Size Limits",
-                        "T1048": "Exfiltration Over Alternative Protocol", "T1041": "Exfiltration Over C2 Channel",
-                        "T1011": "Exfiltration Over Other Network Medium", "T1052": "Exfiltration Over Physical Medium",
-                        "T1567": "Exfiltration Over Web Service", "T1029": "Scheduled Transfer",
-                        "T1537": "Transfer Data to Cloud Account", "T1531": "Account Access Removal",
-                        "T1485": "Data Destruction", "T1486": "Data Encrypted for Impact", "T1565": "Data Manipulation",
-                        "T1491": "Defacement", "T1561": "Disk Wipe", "T1499": "Endpoint Denial of Service",
-                        "T1657": "Financial Theft", "T1495": "Firmware Corruption", "T1490": "Inhibit System Recovery",
-                        "T1498": "Network Denial of Service", "T1496": "Resource Hijacking", "T1489": "Service Stop",
-                        "T1529": "System Shutdown/Reboot"}
-
-technique_id_to_subtechniques = {"T1595": {"001": "Scanning IP Blocks", "002": "Vulnerability Scanning", "003": "Wordlist Scanning"},
-                                 "T1592": {"001": "Hardware", "002": "Software", "003": "Firmware", "004": "Client Configurations"},
-                                 "T1589": {"001": "Credentials", "002": "Email Addresses", "003": "Employee Names"},
-                                 "T1590": {"001": "Domain Properties", "002": "DNS", "003": "Network Trust Dependencies", "004": "Network Topology", "005": "IP Addresses", "006": "Network Security Appliances"},
-                                 "T1591": {"001": "Determine Physical Locations", "002": "Business Relationships", "003": "Identify Business Tempo", "004": "Identify Roles"},
-                                 "T1598": {"001": "Spearphishing Service", "002": "Spearphishing Attachment", "003": "Spearphishing Link", "004": "Spearphishing Voice"},
-                                 "T1597": {"001": "Threat Intel Vendors", "002": "Purchase Technical Data"},
-                                 "T1596": {"001": "DNS/Passive DNS", "002": "WHOIS", "003": "Digital Certificates", "004": "CDNs", "005": "Scan Databases"},
-                                 "T1593": {"001": "Social Media", "002": "Search Engines", "003": "Code Repositories"},
-                                 "T1583": {"001": "Domains", "002": "DNS Server", "003": "Virtual Private Server", "004": "Server", "005": "Botnet", "006": "Web Services", "007": "Serverless", "008": "Malvertising"},
-                                 "T1586": {"001": "Social Media Accounts", "002": "Email Accounts", "003": "Cloud Accounts"},
-                                 "T1584": {"001": "Domains", "002": "DNS Server", "003": "Virtual Private Server", "004": "Server", "005": "Botnet", "006": "Web Services", "007": "Serverless"},
-                                 "T1587": {"001": "Malware", "002": "Code Signing Certificates", "003": "Digital Certificates", "004": "Exploits"},
-                                 "T1585": {"001": "Social Media Accounts", "002": "Email Accounts", "003": "Cloud Accounts"},
-                                 "T1588": {"001": "Malware", "002": "Tool", "003": "Code Signing Certificates", "004": "Digital Certificates", "005": "Exploits", "006": "Vulnerabilities"},
-                                 "T1608": {"001": "Upload Malware", "002": "Upload Tool", "003": "Install Digital Certificate", "004": "Drive-by Target", "005": "Link Target", "006": "SEO Poisoning"},
-                                 "T1566": {"001": "Spearphishing Attachment", "002": "Spearphishing Link", "003": "Spearphishing via Service", "004": "Spearphishing Voice"},
-                                 "T1195": {"001": "Compromise Software Dependencies and Development Tools", "002": "Compromise Software Supply Chain", "003": "Compromise Hardware Supply Chain"},
-                                 "T1078": {"001": "Default Accounts", "002": "Domain Accounts", "003": "Local Accounts", "004": "Cloud Accounts"},
-                                 "T1059": {"001": "PowerShell", "002": "AppleScript", "003": "Windows Command Shell", "004": "Unix Shell", "005": "Visual Basic", "006": "Python", "007": "JavaScript", "008": "Network Device CLI", "009": "Cloud API"},
-                                 "T1559": {"001": "Component Object Model", "002": "Dynamic Data Exchange", "003": "XPC Services"},
-                                 "T1053": {"001": "At", "002": "Cron", "003": "Scheduled Task", "004": "Systemd Timers", "005": "Container Orchestration Job"},
-                                 "T1569": {"001": "Launchctl", "002": "Service Execution"},
-                                 "T1204": {"001": "Malicious Link", "002": "Malicious File", "003": "Malicious Image"},
-                                 "T1098": {"001": "Additional Cloud Credentials", "002": "Additional Email Delegate Permissions", "003": "Additional Cloud Roles", "004": "SSH Authorized Keys", "005": "Device Registration", "006": "Additional Container Cluster Roles"},
-                                 "T1547": {"001": "Registry Run Keys / Startup Folder", "002": "Authentication Package", "003": "Time Providers", "004": "Winlogon Helper DLL", "005": "Security Support Provider", "006": "Kernel Modules and Extensions", "007": "Re-opened Applications", "008": "LSASS Driver", "009": "Shortcut Modification", "010": "Port Monitors", "011": "Print Processors", "012": "XDG Autostart Entries", "013": "Active Setup", "014": "Login Items"},
-                                 "T1037": {"001": "Logon Script (Windows)", "002": "Login Hook", "003": "Network Logon Script", "004": "RC Scripts", "005": "Startup Items"},
-                                 "T1136": {"001": "Local Account", "002": "Domain Account", "003": "Cloud Account"},
-                                 "T1543": {"001": "Launch Agent", "002": "Systemd Service", "003": "Windows Service", "004": "Launch Daemon"},
-                                 "T1546": {"001": "Change Default File Association", "002": "Screensaver", "003": "Windows Management Instrumentation Event Subscription", "004": "Unix Shell Configuration Modification", "005": "Trap", "006": "LC_LOAD_DYLIB Addition", "007": "Netsh Helper DLL", "008": "Accessibility Features", "009": "AppCert DLLs", "010": "AppInit DLLs", "011": "Application Shimming", "012": "Image File Execution Options Injection", "013": "PowerShell Profile", "014": "Emond", "015": "Component Object Model Hijacking", "016": "Installer Packages"},
-                                 "T1574": {"001": "DLL Search Order Hijacking", "002": "DLL Side-Loading", "003": "Dylib Hijacking", "004": "Executable Installer File Permissions Weakness", "005": "Dynamic Linker Hijacking", "006": "Path Interception by PATH Environment Variable", "007": "Path Interception by Search Order Hijacking", "008": "Path Interception by Unquoted Path", "009": "Services File Permissions Weakness", "010": "Services Registry Permissions Weakness", "011": "COR_PROFILER", "012": "KernelCallbackTable"},
-                                 "T1556": {"001": "Domain Controller Authentication", "002": "Password Filter DLL", "003": "Pluggable Authentication Modules", "004": "Network Device Authentication", "005": "Reversible Encryption", "006": "Multi-Factor Authentication", "007": "Hybrid Identity", "008": "Network Provider DLL"},
-                                 "T1137": {"001": "Office Template Macros", "002": "Office Test", "003": "Outlook Forms", "004": "Outlook Home Page", "005": "Outlook Rules", "006": "Add-ins"},
-                                 "T1542": {"001": "System Firmware", "002": "Component Firmware", "003": "Bootkit", "004": "ROMMONkit", "005": "TFTP Boot"},
-                                 "T1505": {"001": "SQL Stored Procedures", "002": "Transport Agent", "003": "Web Shell", "004": "IIS Components", "005": "Terminal Services DLL"},
-                                 "T1205": {"001": "Port Knocking", "002": "Socket Filters"},
-                                 "T1548": {"001": "Setuid and Setgid", "002": "Bypass User Account Control", "003": "Sudo and Sudo Caching", "004": "Elevated Execution with Prompt", "005": "Temporary Elevated Cloud Access"},
-                                 "T1134": {"001": "Token Impersonation/Theft", "002": "Create Process with Token", "003": "Make and Impersonate Token", "004": "Parent PID Spoofing", "005": "SID-History Injection"},
-                                 "T1484": {"001": "Group Policy Modification", "002": "Domain Trust Modification"},
-                                 "T1055": {"001": "", "002": "", "003": "", "004": "", "005": "", "006": "", "007": "", "008": "", "009": "", "010": "", "011": "", "012": ""},
-                                 "T1480": {"001": "Environmental Keying"},
-                                 "T1222": {"001": "Windows File and Directory Permissions Modification", "002": "Linux and Mac File and Directory Permissions Modification"},
-                                 "T1564": {"001": "Hidden Files and Directories", "002": "Hidden Users", "003": "Hidden Window", "004": "NTFS File Attributes", "005": "Hidden File System", "006": "Run Virtual Instance", "007": "VBA Stomping", "008": "Email Hiding Rules", "009": "Resource Forking", "010": "Process Argument Spoofing", "011": "Ignore Process Interrupts"},
-                                 "T1562": {"001": "Disable or Modify Tools", "002": "Disable Windows Event Logging", "003": "Impair Command History Logging", "004": "Disable or Modify System Firewall", "005": "Indicator Blocking", "006": "Disable or Modify Cloud Firewall", "007": "Disable or Modify Cloud Logs", "008": "Safe Mode Boot", "009": "Downgrade Attack", "010": "Spoof Security Alerting", "011": "Disable or Modify Linux Audit System"},
-                                 "T1070": {"001": "Clear Windows Event Logs", "002": "Clear Linux or Mac System Logs", "003": "Clear Command History", "004": "File Deletion", "005": "Network Share Connection Removal", "006": "Timestomp", "007": "Clear Network Connection History and Configurations", "008": "Clear Mailbox Data", "009": "Clear Persistence"},
-                                 "T1036": {"001": "Invalid Code Signature", "002": "Right-to-Left Override", "003": "Rename System Utilities", "004": "Masquerade Task or Service", "005": "Match Legitimate Name or Location", "006": "Space after Filename", "007": "Double File Extension", "008": "Masquerade File Type", "009": "Break Process Trees"},
-                                 "T1578": {"001": "Create Snapshot", "002": "Create Cloud Instance", "003": "Delete Cloud Instance", "004": "Revert Cloud Instance", "005": "Modify Cloud Compute Configurations"},
-                                 "T1601": {"001": "Patch System Image", "002": "Downgrade System Image"},
-                                 "T1599": {"001": "Network Address Translation Traversal"},
-                                 "T1027": {"001": "Binary Padding", "002": "Software Packing", "003": "Steganography", "004": "Compile After Delivery", "005": "Indicator Removal from Tools", "006": "HTML Smuggling", "007": "Dynamic API Resolution", "008": "Stripped Payloads", "009": "Embedded Payloads", "010": "Command Obfuscation", "011": "Fileless Storage", "012": "LNK Icon Smuggling"},
-                                 "T1553": {"001": "Gatekeeper Bypass", "002": "Code Signing", "003": "SIP and Trust Provider Hijacking", "004": "Install Root Certificate", "005": "Mark-of-the-Web Bypass", "006": "Code Signing Policy Modification"},
-                                 "T1218": {"001": "Compiled HTML File", "002": "Control Panel", "003": "CMSTP", "004": "InstallUtil", "005": "Mshta", "006": "Msiexec", "007": "Odbcconf", "008": "Regsvcs/Regasm", "009": "Regsvr32", "010": "Rundll32", "011": "Verclsid", "012": "Mavinject", "013": "MMC"},
-                                 "T1216": {"001": "PubPrn"},
-                                 "T1127": {"001": "MSBuild"},
-                                 "T1550": {"001": "Application Access Token", "002": "Pass the Hash", "003": "Pass the Ticket", "004": "Web Session Cookie"},
-                                 "T1497": {"001": "System Checks", "002": "User Activity Based Checks", "003": "Time Based Evasion"},
-                                 "T1600": {"001": "Reduce Key Space", "002": "Disable Crypto Hardware"},
-                                 "T1557": {"001": "LLMNR/NBT-NS Poisoning and SMB Relay", "002": "ARP Cache Poisoning", "003": "DHCP Spoofing"},
-                                 "T1110": {"001": "Password Guessing", "002": "Password Cracking", "003": "Password Spraying", "004": "Credential Stuffing"},
-                                 "T1555": {"001": "Keychain", "002": "Securityd Memory", "003": "Credentials from Web Browsers", "004": "Windows Credential Manager", "005": "Password Managers", "006": "Cloud Secrets Management Stores"},
-                                 "T1606": {"001": "Web Cookies", "002": "SAML Tokens"},
-                                 "T1056": {"001": "Keylogging", "002": "GUI Input Capture", "003": "Web Portal Capture", "004": "Credential API Hooking"},
-                                 "T1003": {"001": "LSASS Memory", "002": "Security Account Manager", "003": "NTDS", "004": "LSA Secrets", "005": "Cached Domain Credentials", "006": "DCSync", "007": "Proc Filesystem", "008": "/etc/passwd and /etc/shadow"},
-                                 "T1558": {"001": "Golden Ticket", "002": "Silver Ticket", "003": "Kerberoasting", "004": "AS-REP Roasting"},
-                                 "T1552": {"001": "Credentials In Files", "002": "Credentials in Registry", "003": "Bash History", "004": "Private Keys", "005": "Cloud Instance Metadata API", "006": "Group Policy Preferences", "007": "Container API", "008": "Chat Messages"},
-                                 "T1087": {"001": "Local Account", "002": "Domain Account", "003": "Email Account", "004": "Cloud Account"},
-                                 "T1069": {"001": "Local Groups", "002": "Domain Groups", "003": "Cloud Groups"},
-                                 "T1518": {"001": "Security Software Discovery"},
-                                 "T1614": {"001": "System Language Discovery"},
-                                 "T1016": {"001": "Internet Connection Discovery", "002": "Wi-Fi Discovery"},
-                                 "T1563": {"001": "SSH Hijacking", "002": "RDP Hijacking"},
-                                 "T1021": {"001": "Remote Desktop Protocol", "002": "SMB/Windows Admin Shares", "003": "Distributed Component Object Model", "004": "SSH", "005": "VNC", "006": "Windows Remote Management", "007": "Cloud Services", "008": "Direct Cloud VM Connections"},
-                                 "T1560": {"001": "Archive via Utility", "002": "Archive via Library", "003": "Archive via Custom Method"},
-                                 "T1602": {"001": "SNMP (MIB Dump)", "002": "Network Device Configuration Dump"},
-                                 "T1213": {"001": "Confluence", "002": "Sharepoint", "003": "Code Repositories"},
-                                 "T1074": {"001": "Local Data Staging", "002": "Remote Data Staging"},
-                                 "T1114": {"001": "Local Email Collection", "002": "Remote Email Collection", "003": "Email Forwarding Rule"},
-                                 "T1071": {"001": "Web Protocols", "002": "File Transfer Protocols", "003": "Mail Protocols", "004": "DNS"},
-                                 "T1132": {"001": "Standard Encoding", "002": "Non-Standard Encoding"},
-                                 "T1001": {"001": "Junk Data", "002": "Steganography", "003": "Protocol Impersonation"},
-                                 "T1568": {"001": "Fast Flux DNS", "002": "Domain Generation Algorithms", "003": "DNS Calculation"},
-                                 "T1573": {"001": "Symmetric Cryptography", "002": "Asymmetric Cryptography"},
-                                 "T1090": {"001": "Internal Proxy", "002": "External Proxy", "003": "Multi-hop Proxy", "004": "Domain Fronting"},
-                                 "T1102": {"001": "Dead Drop Resolver", "002": "Bidirectional Communication", "003": "One-Way Communication"},
-                                 "T1020": {"001": "Traffic Duplication"},
-                                 "T1048": {"001": "Exfiltration Over Symmetric Encrypted Non-C2 Protocol", "002": "Exfiltration Over Asymmetric Encrypted Non-C2 Protocol", "003": "Exfiltration Over Unencrypted Non-C2 Protocol"},
-                                 "T1011": {"001": "Exfiltration Over Bluetooth"},
-                                 "T1052": {"001": "Exfiltration over USB"},
-                                 "T1567": {"001": "Exfiltration to Code Repository", "002": "Exfiltration to Cloud Storage", "003": "Exfiltration to Text Storage Sites", "004": "Exfiltration Over Webhook"},
-                                 "T1565": {"001": "Stored Data Manipulation", "002": "Transmitted Data Manipulation", "003": "Runtime Data Manipulation"},
-                                 "T1491": {"001": "Internal Defacement", "002": "External Defacement"},
-                                 "T1561": {"001": "Disk Content Wipe", "002": "Disk Structure Wipe"},
-                                 "T1499": {"001": "OS Exhaustion Flood", "002": "Service Exhaustion Flood", "003": "Application Exhaustion Flood", "004": "Application or System Exploitation"},
-                                 "T1498": {"001": "Direct Network Flood", "002": "Reflection Amplification"}}
+from utils import tactic_name_to_id, technique_id_to_name, technique_id_to_subtechnique_id_to_name
 
 
 # def print_entities(rule_objects_list: list[dict]):
@@ -498,9 +306,9 @@ def get_ttps(tags: list[str]) -> tuple[set[str], set[str], set[str]]:
         else:
             tag = tag.upper()
             technique, sub_technique = tag.split('.')
-            if technique in technique_id_to_subtechniques and sub_technique in technique_id_to_subtechniques[technique]:
+            if technique in technique_id_to_subtechnique_id_to_name and sub_technique in technique_id_to_subtechnique_id_to_name[technique]:
                 techniques.add(f'{technique_id_to_name[technique]} ({technique})')
-                subtechniques.add(f'{technique_id_to_name[technique]}: {technique_id_to_subtechniques[technique][sub_technique]} ({tag})')
+                subtechniques.add(f'{technique_id_to_name[technique]}: {technique_id_to_subtechnique_id_to_name[technique][sub_technique]} ({tag})')
 
     return tactics, techniques, subtechniques
 
@@ -764,78 +572,98 @@ def extract_entities_and_relationships(rules: dict | list[dict]) -> tuple[dict[s
     return entities, relationships
 
 
-def main():
-    ground_truth_rule = yaml.safe_load("""title: AWS IAM S3Browser Templated S3 Bucket Policy Creation
-id: db014773-7375-4f4e-b83b-133337c0ffee
-status: experimental
-description: Detects S3 Browser utility creating Inline IAM Policy containing default S3 bucket name placeholder value of <YOUR-BUCKET-NAME>.
-references:
-    - https://permiso.io/blog/s/unmasking-guivil-new-cloud-threat-actor
-author: daniel.bohannon@permiso.io (@danielhbohannon)
-date: 2023/05/17
-modified: 2023/05/17
-tags:
-    - attack.execution
-    - attack.t1059.009
-    - attack.persistence
-    - attack.t1078.004
-logsource:
-    product: aws
-    service: cloudtrail
-detection:
-    selection_source:
-        eventSource: iam.amazonaws.com
-        eventName: PutUserPolicy
-    filter_tooling:
-        userAgent|contains: 'S3 Browser'
-    filter_policy_resource:
-        requestParameters|contains: '"arn:aws:s3:::<YOUR-BUCKET-NAME>/*"'
-    filter_policy_action:
-        requestParameters|contains: '"s3:GetObject"'
-    filter_policy_effect:
-        requestParameters|contains: '"Allow"'
-    condition: selection_source and filter_tooling and filter_policy_resource and filter_policy_action and filter_policy_effect
-falsepositives:
-    - Valid usage of S3 Browser with accidental creation of default Inline IAM Policy without changing default S3 bucket name placeholder value
-level: high""")
-    output_rule = yaml.safe_load("""title: Suspicious IAM User Policy Creation
-status: experimental
-description: Detects creation of IAM user policies which may indicate malicious activity by threat actors such as GUI-vil who attempt persistence.
-references:
-    - https://permiso.io/blog/s/unmasking-guivil-new-cloud-threat-actor/
-    - https://attack.mitre.org/techniques/T1098/003/
-author: LLMCloudHunter
-date: 2024/05/17
-tags:
-    - attack.persistence
-    - attack.t1098
-    - attack.t1098.003
-logsource:
-    product: aws
-    service: cloudtrail
-detection:
-    selection:
-        eventSource: iam.amazonaws.com
-        eventName: PutUserPolicy
-    selection_ioc_ip:
-        sourceIPAddress:
-            - 114.125.246.235
-            - 182.1.229.252
-            - 114.125.228.81
-            - 114.125.232.189
-            - 114.125.246.43
-            - 114.125.245.53
-            - 36.85.110.142
-            - 114.125.229.197
-            - 114.125.247.101
-    selection_ioc_ua:
-        userAgent|contains: S3 Browser 9.5.5 https://s3browser.com/
-condition: selection and (selection_ioc_ip or selection_ioc_ua)
-falsepositives:
-    - Legitimate IAM user policy creation for administrative purposes
-level: high""")
+def _get_latest_run_file_path(file: str) -> str:
+    # get all the files in which their prefix is the same as the file
+    directory_path = os.path.abspath('output')
+    files = [f for f in os.listdir(directory_path) if f.startswith(f'{file}_(run_')]
+    file = sorted(files, reverse=True)[0]
+    file_path = os.path.join(directory_path, file)
 
-    entities, relationships = extract_entities_and_relationships([ground_truth_rule, output_rule])
+    return file_path
+
+
+def main(paths: list[str]):
+#     ground_truth_rule = yaml.safe_load("""title: AWS IAM S3Browser Templated S3 Bucket Policy Creation
+# id: db014773-7375-4f4e-b83b-133337c0ffee
+# status: experimental
+# description: Detects S3 Browser utility creating Inline IAM Policy containing default S3 bucket name placeholder value of <YOUR-BUCKET-NAME>.
+# references:
+#     - https://permiso.io/blog/s/unmasking-guivil-new-cloud-threat-actor
+# author: daniel.bohannon@permiso.io (@danielhbohannon)
+# date: 2023/05/17
+# modified: 2023/05/17
+# tags:
+#     - attack.execution
+#     - attack.t1059.009
+#     - attack.persistence
+#     - attack.t1078.004
+# logsource:
+#     product: aws
+#     service: cloudtrail
+# detection:
+#     selection_source:
+#         eventSource: iam.amazonaws.com
+#         eventName: PutUserPolicy
+#     filter_tooling:
+#         userAgent|contains: 'S3 Browser'
+#     filter_policy_resource:
+#         requestParameters|contains: '"arn:aws:s3:::<YOUR-BUCKET-NAME>/*"'
+#     filter_policy_action:
+#         requestParameters|contains: '"s3:GetObject"'
+#     filter_policy_effect:
+#         requestParameters|contains: '"Allow"'
+#     condition: selection_source and filter_tooling and filter_policy_resource and filter_policy_action and filter_policy_effect
+# falsepositives:
+#     - Valid usage of S3 Browser with accidental creation of default Inline IAM Policy without changing default S3 bucket name placeholder value
+# level: high""")
+#     output_rule = yaml.safe_load("""title: Suspicious IAM User Policy Creation
+# status: experimental
+# description: Detects creation of IAM user policies which may indicate malicious activity by threat actors such as GUI-vil who attempt persistence.
+# references:
+#     - https://permiso.io/blog/s/unmasking-guivil-new-cloud-threat-actor/
+#     - https://attack.mitre.org/techniques/T1098/003/
+# author: LLMCloudHunter
+# date: 2024/05/17
+# tags:
+#     - attack.persistence
+#     - attack.t1098
+#     - attack.t1098.003
+# logsource:
+#     product: aws
+#     service: cloudtrail
+# detection:
+#     selection:
+#         eventSource: iam.amazonaws.com
+#         eventName: PutUserPolicy
+#     selection_ioc_ip:
+#         sourceIPAddress:
+#             - 114.125.246.235
+#             - 182.1.229.252
+#             - 114.125.228.81
+#             - 114.125.232.189
+#             - 114.125.246.43
+#             - 114.125.245.53
+#             - 36.85.110.142
+#             - 114.125.229.197
+#             - 114.125.247.101
+#     selection_ioc_ua:
+#         userAgent|contains: S3 Browser 9.5.5 https://s3browser.com/
+# condition: selection and (selection_ioc_ip or selection_ioc_ua)
+# falsepositives:
+#     - Legitimate IAM user policy creation for administrative purposes
+# level: high""")
+
+    for file in files:
+        latest_run_file_path = _get_latest_run_file_path(file)
+        with open(latest_run_file_path, 'r') as f:
+            output_rules = yaml.safe_load(f)
+        output_entities, output_relationships = extract_entities_and_relationships(output_rules)
+
+
+        with open(os.path.abspath(f'ground_truth\\rules\\{file}.yaml'), 'r') as f:
+            ground_truth_rules = yaml.safe_load(f)
+
+        # entities, relationships = extract_entities_and_relationships([ground_truth_rule, output_rule])
     # entities, relationships = extract_entities_and_relationships(ground_truth_rule)
     print('hi')
 
@@ -855,4 +683,26 @@ level: high""")
 
 
 if __name__ == "__main__":
-    main()
+    files = []
+    # files.append('anatomy_of_attack_exposed_keys_to_crypto_mining')
+    # files.append('behind_the_scenes_expel_soc_alert_aws')
+    files.append('cloud_breach_terraform_data_theft')
+    # files.append('compromised_cloud_compute_credentials_(case_1)')
+    # files.append('detecting-ai-resource-hijacking-with-composite-alerts')
+    # files.append('finding-evil-in-aws')
+    # files.append('incident_report_from_cli_to_console_chasing_an_attacker_in_aws')
+    # files.append('incident_report_stolen_aws_access_keys')
+    # files.append('lucr_3_scattered_spider_getting_saas_y_in_the_cloud')
+    # files.append('malicious_operations_of_exposed_iam_keys_cryptojacking')
+    # files.append('ransomware_in_the_cloud')
+    # files.append('shinyhunters-ransomware-extortion')
+    # files.append('sugarcrm_cloud_incident_black_hat')
+    # files.append('tales-from-the-cloud-trenches-aws-activity-to-phishing')
+    # files.append('tales-from-the-cloud-trenches-ecs-crypto-mining')
+    # files.append('tales-from-the-cloud-trenches-raiding-for-vaults-buckets-secrets')
+    # files.append('the-curious-case-of-dangerdev-protonmail-me')
+    # files.append('two_real_life_examples_of_why_limiting_permissions_works_lessons_from_aws_cirt_(case_1)')
+    # files.append('two_real_life_examples_of_why_limiting_permissions_works_lessons_from_aws_cirt_(case_2)')
+    # files.append('unmasking_guivil_new_cloud_threat_actor')
+
+    main(files)
