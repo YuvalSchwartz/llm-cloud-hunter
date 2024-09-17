@@ -83,3 +83,88 @@
             userAgent|contains: 
         condition: 
     level: 
+-   tags:
+        - attack.
+        - attack.
+        - attack.
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: 
+            eventName: 
+        selection_ioc_ip:
+            sourceIPAddress: 
+        selection_ioc_ua:
+            userAgent|contains: 
+        condition: 
+    level: 
+-   tags:
+        - attack.
+        - attack.
+        - attack.
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: 
+            eventName: 
+        selection_ioc_ip:
+            sourceIPAddress: 
+        selection_ioc_ua:
+            userAgent|contains: 
+        condition: 
+    level: 
+-   tags:
+        - attack.
+        - attack.
+        - attack.
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: 
+            eventName: 
+        selection_ioc_ip:
+            sourceIPAddress: 
+        selection_ioc_ua:
+            userAgent|contains: 
+        condition: 
+    level: 
+-   tags:
+        - attack.
+        - attack.
+        - attack.
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: 
+            eventName: 
+        selection_ioc_ip:
+            sourceIPAddress: 
+        selection_ioc_ua:
+            userAgent|contains: 
+        condition: 
+    level: 
+-   tags:
+        - attack.
+        - attack.
+        - attack.
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: 
+            eventName: 
+        selection_ioc_ip:
+            sourceIPAddress: 
+        selection_ioc_ua:
+            userAgent|contains: 
+        condition: 
+    level: 

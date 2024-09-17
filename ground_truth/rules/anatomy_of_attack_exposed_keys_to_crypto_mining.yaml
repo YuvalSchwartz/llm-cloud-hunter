@@ -1,85 +1,146 @@
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.discovery
+        - attack.t1580
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: s3.amazonaws.com
+            eventName: ListBuckets
         selection_ioc_ip:
-            sourceIPAddress: 
+            sourceIPAddress: 182.1.229.252
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
+            userAgent|contains: S3 Browser 9.5.5
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
     level: 
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.privilege_escalation
+        - attack.t1098
+        - attack.t1098.003
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: iam.amazonaws.com
+            eventName: PutUserPolicy
+            requestParameters.policyName:
+                - dq
+                - backupuser
         selection_ioc_ip:
             sourceIPAddress: 
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
+            userAgent|contains: S3 Browser 9.5.5
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
     level: 
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.persistence
+        - attack.t1136
+        - attack.t1136.003
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: iam.amazonaws.com
+            eventName: CreateUser
+            requestParameters.userName: backup
         selection_ioc_ip:
-            sourceIPAddress: 
+            sourceIPAddress: 182.1.229.252
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
+            userAgent|contains: S3 Browser 9.5.5
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
     level: 
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.persistence
+        - attack.t1098
+        - attack.t1098.001
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: iam.amazonaws.com
+            eventName: CreateAccessKey
         selection_ioc_ip:
-            sourceIPAddress: 
+            sourceIPAddress: 182.1.229.252
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
+            userAgent|contains: S3 Browser 9.5.5
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
     level: 
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.persistence
+        - attack.t1098
+        - attack.t1098.001
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: ec2.amazonaws.com
+            eventName: CreateKeyPair
         selection_ioc_ip:
-            sourceIPAddress: 
+            sourceIPAddress: 182.1.229.252
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
+            userAgent|contains: S3 Browser 9.5.5
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    level: 
+-   tags:
+        - attack.defense_evasion
+        - attack.t1578
+        - attack.t1578.005
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: ec2.amazonaws.com
+            eventName: CreateSecurityGroup
+        selection_ioc_ip:
+            sourceIPAddress: 182.1.229.252
+        selection_ioc_ua:
+            userAgent|contains: S3 Browser 9.5.5
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    level: 
+-   tags:
+        - attack.impact
+        - attack.t1496
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: ec2.amazonaws.com
+            eventName: RunInstances
+            requestParameters.instanceType|contains: xlarge
+            requestParameters.monitoring.state: disabled
+            requestParameters.httpTokens: optional
+            requestParameters.hypervisor: xen
+        selection_ioc_ip:
+            sourceIPAddress: 182.1.229.252
+        selection_ioc_ua:
+            userAgent|contains: S3 Browser 9.5.5
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    level: 
+-   tags:
+        - attack.defense_evasion
+        - attack.t1578
+        - attack.t1578.005
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: ec2.amazonaws.com
+            eventName: AuthorizeSecurityGroupIngress
+            requestParameters.fromPort: 22
+            requestParameters.toPort: 22
+            requestParameters.cidrIpv4: 0.0.0.0/0
+            requestParameters.ipProtocol: tcp
+        selection_ioc_ip:
+            sourceIPAddress: 182.1.229.252
+        selection_ioc_ua:
+            userAgent|contains: S3 Browser 9.5.5
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
     level: 
