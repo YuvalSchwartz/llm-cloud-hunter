@@ -392,10 +392,10 @@ if __name__ == "__main__":
     file_prefixes = []
     # file_prefixes.append('anatomy_of_attack_exposed_keys_to_crypto_mining')
     # file_prefixes.append('behind_the_scenes_expel_soc_alert_aws')
-    file_prefixes.append('cloud_breach_terraform_data_theft')
+    # file_prefixes.append('cloud_breach_terraform_data_theft')
     # file_prefixes.append('compromised_cloud_compute_credentials_(case_1)')
-    # file_prefixes.append('detecting-ai-resource-hijacking-with-composite-alerts')
-    # file_prefixes.append('finding-evil-in-aws')
+    # file_prefixes.append('finding_evil_in_aws')
+    file_prefixes.append('detecting_ai_resource_hijacking_with_composite_alerts')
     # file_prefixes.append('incident_report_from_cli_to_console_chasing_an_attacker_in_aws')
     # file_prefixes.append('incident_report_stolen_aws_access_keys')
     # file_prefixes.append('lucr_3_scattered_spider_getting_saas_y_in_the_cloud')

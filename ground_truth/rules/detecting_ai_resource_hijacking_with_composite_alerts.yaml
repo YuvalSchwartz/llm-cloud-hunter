@@ -1,0 +1,249 @@
+-   tags:
+        - attack.discovery
+        - attack.t1087
+        - attack.t1087.004
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: sts.amazonaws.com
+            eventName: GetCallerIdentity
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 183.80.32.29
+                - 104.28.214.18
+                - 104.28.237.72
+                - 148.252.146.75
+                - 58.187.68.163
+                - 104.28.212.85
+                - 104.28.200.2
+                - 89.187.170.169
+                - 85.255.235.112
+                - 104.28.232.1
+                - 104.28.154.100
+                - 104.28.205.70
+                - 104.28.205.72
+                - 104.28.243.165
+                - 104.28.200.1
+                - 1.53.56.66
+                - 104.28.244.85
+                - 58.187.189.153
+                - 104.28.205.71
+                - 104.28.212.86
+                - 104.28.237.71
+                - 58.187.68.220
+                - 27.65.42.168
+                - 104.28.199.254
+                - 58.187.68.218
+                - 212.102.51.245
+                - 104.28.246.18
+                - 104.28.232.21
+                - 104.28.242.246
+                - 104.28.232.6
+                - 104.28.205.73
+                - 104.28.231.254
+                - 104.28.232.20
+                - 104.28.237.70
+                - 37.19.205.195
+                - 42.118.236.39
+                - 104.28.246.17
+                - 58.187.68.217
+                - 104.28.244.86
+                - 104.28.214.17
+                - 183.80.38.101
+                - 193.107.109.72
+        selection_ioc_ua:
+            userAgent|contains:
+                - python-requests/2.20.0 auth-aws-sigv4/0.7
+                - python-requests/2.28.2 auth-aws-sigv4/0.7
+                - python-requests/2.32.2 auth-aws-sigv4/0.7
+                - python-requests/2.31.0 auth-aws-sigv4/0.7
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    level: high
+- tags:
+      - attack.reconnaissance
+      - attack.t1526
+  logsource:
+      product: aws
+      service: cloudtrail
+  detection:
+      selection_bedrock:
+          eventSource: bedrock.amazonaws.com
+          eventName:
+              - ListFoundationModels
+              - GetFoundationModelAvailability
+          selection_glacier:
+              eventSource: glacier.amazonaws.com
+              eventName: ListVaults
+      selection_ioc_ip:
+            sourceIPAddress:
+                - 183.80.32.29
+                - 104.28.214.18
+                - 104.28.237.72
+                - 148.252.146.75
+                - 58.187.68.163
+                - 104.28.212.85
+                - 104.28.200.2
+                - 89.187.170.169
+                - 85.255.235.112
+                - 104.28.232.1
+                - 104.28.154.100
+                - 104.28.205.70
+                - 104.28.205.72
+                - 104.28.243.165
+                - 104.28.200.1
+                - 1.53.56.66
+                - 104.28.244.85
+                - 58.187.189.153
+                - 104.28.205.71
+                - 104.28.212.86
+                - 104.28.237.71
+                - 58.187.68.220
+                - 27.65.42.168
+                - 104.28.199.254
+                - 58.187.68.218
+                - 212.102.51.245
+                - 104.28.246.18
+                - 104.28.232.21
+                - 104.28.242.246
+                - 104.28.232.6
+                - 104.28.205.73
+                - 104.28.231.254
+                - 104.28.232.20
+                - 104.28.237.70
+                - 37.19.205.195
+                - 42.118.236.39
+                - 104.28.246.17
+                - 58.187.68.217
+                - 104.28.244.86
+                - 104.28.214.17
+                - 183.80.38.101
+                - 193.107.109.72
+      selection_ioc_ua:
+        userAgent|contains:
+            - python-requests/2.20.0 auth-aws-sigv4/0.7
+            - python-requests/2.28.2 auth-aws-sigv4/0.7
+            - python-requests/2.32.2 auth-aws-sigv4/0.7
+            - python-requests/2.31.0 auth-aws-sigv4/0.7
+  condition: (selection_bedrock or selection_glacier) and (selection_ioc_ip or selection_ioc_ua)
+  level: medium
+-   tags:
+        - attack.privilege_escalation
+        - attack.t1136
+        - attack.t1098
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: iam.amazonaws.com
+            eventName:
+                - CreateUser
+                - AttachUserPolicy
+                - CreateLoginProfile
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 183.80.32.29
+                - 104.28.214.18
+                - 104.28.237.72
+                - 148.252.146.75
+                - 58.187.68.163
+                - 104.28.212.85
+                - 104.28.200.2
+                - 89.187.170.169
+                - 85.255.235.112
+                - 104.28.232.1
+                - 104.28.154.100
+                - 104.28.205.70
+                - 104.28.205.72
+                - 104.28.243.165
+                - 104.28.200.1
+                - 1.53.56.66
+                - 104.28.244.85
+                - 58.187.189.153
+                - 104.28.205.71
+                - 104.28.212.86
+                - 104.28.237.71
+                - 58.187.68.220
+                - 27.65.42.168
+                - 104.28.199.254
+                - 58.187.68.218
+                - 212.102.51.245
+                - 104.28.246.18
+                - 104.28.232.21
+                - 104.28.242.246
+                - 104.28.232.6
+                - 104.28.205.73
+                - 104.28.231.254
+                - 104.28.232.20
+                - 104.28.237.70
+                - 37.19.205.195
+                - 42.118.236.39
+                - 104.28.246.17
+                - 58.187.68.217
+                - 104.28.244.86
+                - 104.28.214.17
+                - 183.80.38.101
+                - 193.107.109.72
+        condition: selection and selection_ioc_ip
+    level: high
+-   tags:
+        - attack.impact
+        - attack.t1496
+        - attack.resource_hijacking
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: bedrock.amazonaws.com
+            eventName:
+                - InvokeModel
+                - InvokeModelWithResponseStream
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 183.80.32.29
+                - 104.28.214.18
+                - 104.28.237.72
+                - 148.252.146.75
+                - 58.187.68.163
+                - 104.28.212.85
+                - 104.28.200.2
+                - 89.187.170.169
+                - 85.255.235.112
+                - 104.28.232.1
+                - 104.28.154.100
+                - 104.28.205.70
+                - 104.28.205.72
+                - 104.28.243.165
+                - 104.28.200.1
+                - 1.53.56.66
+                - 104.28.244.85
+                - 58.187.189.153
+                - 104.28.205.71
+                - 104.28.212.86
+                - 104.28.237.71
+                - 58.187.68.220
+                - 27.65.42.168
+                - 104.28.199.254
+                - 58.187.68.218
+                - 212.102.51.245
+                - 104.28.246.18
+                - 104.28.232.21
+                - 104.28.242.246
+                - 104.28.232.6
+                - 104.28.205.73
+                - 104.28.231.254
+                - 104.28.232.20
+                - 104.28.237.70
+                - 37.19.205.195
+                - 42.118.236.39
+                - 104.28.246.17
+                - 58.187.68.217
+                - 104.28.244.86
+                - 104.28.214.17
+                - 183.80.38.101
+                - 193.107.109.72
+        condition: selection and selection_ioc_ip
+    level: high

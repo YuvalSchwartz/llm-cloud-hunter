@@ -51,13 +51,20 @@ def main(urls: str | list[str]) -> None:
 
 if __name__ == '__main__':
     urls = []
-    # Done
+    #####   Done and have ground truth    #####
+
+    # Done by Yuval
     # urls.append('https://permiso.io/blog/s/anatomy-of-attack-exposed-keys-to-crypto-mining/')
     # urls.append('https://expel.com/blog/behind-the-scenes-expel-soc-alert-aws/')
     # urls.append('https://sysdig.com/blog/cloud-breach-terraform-data-theft/')
+
+    #Done by Lavi
     # urls.append('https://unit42.paloaltonetworks.com/compromised-cloud-compute-credentials/')
     # urls.append('https://expel.com/blog/finding-evil-in-aws/')
     # urls.append('https://www.lacework.com/blog/detecting-ai-resource-hijacking-with-composite-alerts/')
+
+    #####   Done but need ground truth  #####
+
     # urls.append('https://expel.com/blog/incident-report-from-cli-to-console-chasing-an-attacker-in-aws/')
     # urls.append('https://expel.com/blog/incident-report-stolen-aws-access-keys/')
     # urls.append('https://unit42.paloaltonetworks.com/sugarcrm-cloud-incident-black-hat/')

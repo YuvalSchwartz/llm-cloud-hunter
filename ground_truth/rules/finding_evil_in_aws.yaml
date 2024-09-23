@@ -1,0 +1,82 @@
+-   tags:
+        - attack.credential_access
+        - attack.t1552
+        - attack.t1552.004
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: ec2.amazonaws.com
+            eventName:
+                - CreateKeyPair
+                - ImportKeyPair
+    selection_ip:
+        sourceIPAddress: 192.168.0.1
+    selection_ua:
+        userAgent|startswith: 'aws-cli/'
+    condition: selection and (selection_ip or selection_ua)
+    level: high
+-   tags:
+        - attack.discovery
+        - attack.t1526
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection_s3:
+            eventSource: s3.amazonaws.com
+            eventName: ListBuckets
+        selection_ec2:
+            eventSource: ec2.amazonaws.com
+            eventName: DescribeInstances
+        selection_rds:
+            eventSource: rds.amazonaws.com
+            eventName: DescribeDBInstances
+        selection_ip:
+            sourceIPAddress: 192.168.0.1
+        selection_ua:
+            userAgent|startswith: aws-cli/
+        condition: (selection_s3 or selection_ec2 or selection_rds) and (selection_ip or selection_ua)
+    level: medium
+-   tags:
+        - attack.persistence
+        - attack.t1098
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection_describe:
+            eventSource: ec2.amazonaws.com
+            eventName: DescribeSecurityGroups
+        selection_modify:
+            eventSource: ec2.amazonaws.com
+            eventName: AuthorizeSecurityGroupIngress
+        selection_ip:
+            sourceIPAddress: 192.168.0.1
+        selection_ua:
+            userAgent|startswith: aws-cli/
+        condition: selection_describe and selection_modify and (selection_ip or selection_ua)
+    level: high
+-   tags:
+        - attack.execution
+        - attack.t1204
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection_describe:
+            eventSource: ec2.amazonaws.com
+            eventName: DescribeInstances
+        selection_create_key:
+            eventSource: ec2.amazonaws.com
+            eventName: CreateKeyPair
+        selection_run:
+            eventSource: ec2.amazonaws.com
+            eventName: RunInstances
+        selection_ip:
+            sourceIPAddress: '192.168.0.1'
+        selection_ua:
+            userAgent|startswith: 'aws-cli/'
+        condition: all of selection_* and (selection_ip or selection_ua)
+    level: high
