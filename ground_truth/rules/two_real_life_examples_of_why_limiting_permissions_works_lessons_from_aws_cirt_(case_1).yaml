@@ -1,170 +1,55 @@
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.discovery
+        - attack.t1069
+        - attack.t1087
     logsource:
         product: aws
         service: cloudtrail
     detection:
-        selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
+        selection_iam:
+            eventSource: iam.amazonaws.com
+            eventName:
+                - 'Get*'
+                - 'List*'
+        selection_error:
+            errorCode: 'Client.UnauthorizedOperation'
+            errorMessage|contains: 'You are not authorized to perform this operation'
+        condition: selection_iam and selection_error
+    level: low
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.credential_access
+        - attack.t1528
     logsource:
         product: aws
         service: cloudtrail
     detection:
-        selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
+        selection_iam:
+            eventSource: iam.amazonaws.com
+            eventName:
+                - CreateAccessKey
+                - UpdateAccessKey
+                - DeleteAccessKey
+        selection_error:
+            errorCode: 'Client.UnauthorizedOperation'
+            errorMessage|contains: 'You are not authorized to perform this operation'
+        condition: selection_iam and selection_error
+    level: high
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.persistence
+        - attack.privilege_escalation
+        - attack.t1098
     logsource:
         product: aws
         service: cloudtrail
     detection:
-        selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
-    logsource:
-        product: aws
-        service: cloudtrail
-    detection:
-        selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
-    logsource:
-        product: aws
-        service: cloudtrail
-    detection:
-        selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
-    logsource:
-        product: aws
-        service: cloudtrail
-    detection:
-        selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
-    logsource:
-        product: aws
-        service: cloudtrail
-    detection:
-        selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
-    logsource:
-        product: aws
-        service: cloudtrail
-    detection:
-        selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
-    logsource:
-        product: aws
-        service: cloudtrail
-    detection:
-        selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
-    logsource:
-        product: aws
-        service: cloudtrail
-    detection:
-        selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
+        selection_iam:
+            eventSource: iam.amazonaws.com
+            eventName:
+                - CreateLoginProfile
+                - PutRolePolicy
+                - CreatePolicyVersion
+        selection_error:
+            errorCode: 'Client.UnauthorizedOperation'
+            errorMessage|contains: 'You are not authorized to perform this operation'
+        condition: selection_iam and selection_error
+    level: high
