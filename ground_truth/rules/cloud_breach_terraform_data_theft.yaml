@@ -1,170 +1,373 @@
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.persistence
+        - attack.t1136
+        - attack.t1136.003
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: iam.amazonaws.com
+            eventName: CreateUser
         selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
+            sourceIPAddress:
+                - 80.239.140.66
+                - 45.9.148.221
+                - 45.9.148.121
+                - 45.9.249.58
+        condition: selection and selection_ioc_ip
     level: 
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.discovery
+        - attack.t1069
+        - attack.t1069.003
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: iam.amazonaws.com
+            eventName: ListAttachedGroupPolicies
         selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
+            sourceIPAddress:
+                - 80.239.140.66
+                - 45.9.148.221
+                - 45.9.148.121
+                - 45.9.249.58
+        condition: selection and selection_ioc_ip
     level: 
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.privilege_escalation
+        - attack.t1484
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: iam.amazonaws.com
+            eventName: AttachGroupPolicy
         selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
+            sourceIPAddress:
+                - 80.239.140.66
+                - 45.9.148.221
+                - 45.9.148.121
+                - 45.9.249.58
+        condition: selection and selection_ioc_ip
     level: 
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.persistence
+        - attack.t1136
+        - attack.t1136.003
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: iam.amazonaws.com
+            eventName: CreateGroup
         selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
+            sourceIPAddress:
+                - 80.239.140.66
+                - 45.9.148.221
+                - 45.9.148.121
+                - 45.9.249.58
+        condition: selection and selection_ioc_ip
     level: 
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.discovery
+        - attack.t1619
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: s3.amazonaws.com
+            eventName: ListBuckets
         selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
+            sourceIPAddress:
+                - 80.239.140.66
+                - 45.9.148.221
+                - 45.9.148.121
+                - 45.9.249.58
+        condition: selection and selection_ioc_ip
     level: 
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.discovery
+        - attack.t1087
+        - attack.t1087.004
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: iam.amazonaws.com
+            eventName: GetPolicy
         selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
+            sourceIPAddress:
+                - 80.239.140.66
+                - 45.9.148.221
+                - 45.9.148.121
+                - 45.9.249.58
+        condition: selection and selection_ioc_ip
     level: 
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.discovery
+        - attack.t1580
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: lambda.amazonaws.com
+            eventName: ListVersionsByFunction
         selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
+            sourceIPAddress:
+                - 80.239.140.66
+                - 45.9.148.221
+                - 45.9.148.121
+                - 45.9.249.58
+        condition: selection and selection_ioc_ip
     level: 
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.discovery
+        - attack.t1580
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: lambda.amazonaws.com
+            eventName: GetFunction
         selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
+            sourceIPAddress:
+                - 80.239.140.66
+                - 45.9.148.221
+                - 45.9.148.121
+                - 45.9.249.58
+        condition: selection and selection_ioc_ip
     level: 
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.discovery
+        - attack.t1580
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: kms.amazonaws.com
+            eventName: ListAliases
         selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
+            sourceIPAddress:
+                - 80.239.140.66
+                - 45.9.148.221
+                - 45.9.148.121
+                - 45.9.249.58
+        condition: selection and selection_ioc_ip
     level: 
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.discovery
+        - attack.t1580
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: lambda.amazonaws.com
+            eventName: ListEventSourceMappings
         selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
+            sourceIPAddress:
+                - 80.239.140.66
+                - 45.9.148.221
+                - 45.9.148.121
+                - 45.9.249.58
+        condition: selection and selection_ioc_ip
+    level: 
+-   tags:
+        - attack.discovery
+        - attack.t1580
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: lambda.amazonaws.com
+            eventName: ListTags
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 80.239.140.66
+                - 45.9.148.221
+                - 45.9.148.121
+                - 45.9.249.58
+        condition: selection and selection_ioc_ip
+    level: 
+-   tags:
+        - attack.discovery
+        - attack.t1580
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: lambda.amazonaws.com
+            eventName: ListFunctions
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 80.239.140.66
+                - 45.9.148.221
+                - 45.9.148.121
+                - 45.9.249.58
+        condition: selection and selection_ioc_ip
+    level: 
+-   tags:
+        - attack.defense_evasion
+        - attack.t1562
+        - attack.t1562.008
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: cloudtrail.amazonaws.com
+            eventName: StopLogging
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 80.239.140.66
+                - 45.9.148.221
+                - 45.9.148.121
+                - 45.9.249.58
+        condition: selection and selection_ioc_ip
+    level: 
+-   tags:
+        - attack.credential_access
+        - attack.t1552
+        - attack.t1552.001
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: s3.amazonaws.com
+            eventName: GetObject
+            requestParameter.key: terraform.tfstate
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 80.239.140.66
+                - 45.9.148.221
+                - 45.9.148.121
+                - 45.9.249.58
+        condition: selection and selection_ioc_ip
+    level: 
+-   tags:
+        - attack.discovery
+        - attack.t1069
+        - attack.t1069.003
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: iam.amazonaws.com
+            eventName: ListGroups
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 80.239.140.66
+                - 45.9.148.221
+                - 45.9.148.121
+                - 45.9.249.58
+        condition: selection and selection_ioc_ip
+    level: 
+-   tags:
+        - attack.privilege_escalation
+        - attack.t1098
+        - attack.t1098.003
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: iam.amazonaws.com
+            eventName: PutUserPolicy
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 80.239.140.66
+                - 45.9.148.221
+                - 45.9.148.121
+                - 45.9.249.58
+        condition: selection and selection_ioc_ip
+    level: 
+-   tags:
+        - attack.privilege_escalation
+        - attack.t1098
+        - attack.t1098.003
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: iam.amazonaws.com
+            eventName: AttachUserPolicy
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 80.239.140.66
+                - 45.9.148.221
+                - 45.9.148.121
+                - 45.9.249.58
+        condition: selection and selection_ioc_ip
+    level: 
+-   tags:
+        - attack.discovery
+        - attack.t1087
+        - attack.t1087.004
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: iam.amazonaws.com
+            eventName: ListUsers
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 80.239.140.66
+                - 45.9.148.221
+                - 45.9.148.121
+                - 45.9.249.58
+        condition: selection and selection_ioc_ip
+    level: 
+-   tags:
+        - attack.discovery
+        - attack.t1087
+        - attack.t1087.004
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: iam.amazonaws.com
+            eventName: GetUser
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 80.239.140.66
+                - 45.9.148.221
+                - 45.9.148.121
+                - 45.9.249.58
+        condition: selection and selection_ioc_ip
+    level: 
+-   tags:
+        - attack.discovery
+        - attack.t1087
+        - attack.t1087.004
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: sts.amazonaws.com
+            eventName: GetCallerIdentity
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 80.239.140.66
+                - 45.9.148.221
+                - 45.9.148.121
+                - 45.9.249.58
+        condition: selection and selection_ioc_ip
     level: 

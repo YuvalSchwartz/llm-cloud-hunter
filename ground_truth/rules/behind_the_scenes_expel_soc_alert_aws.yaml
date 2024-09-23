@@ -1,170 +1,118 @@
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.defense_evasion
+        - attack.t1578
+        - attack.t1578.005
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: ec2.amazonaws.com
+            eventName: CreateSecurityGroup
+            userIdentity.type: Root
         selection_ioc_ip:
-            sourceIPAddress: 
+            sourceIPAddress:
+                - 1.2.3.4
+                - 107.191.99.95
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
+            userAgent|contains: aws-sdk-go/1.4.10 (go1.8.3; linux; amd64)
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
     level: 
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.discovery
+        - attack.t1580
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: ec2.amazonaws.com
+            eventName: DescribeKeyPairs
+            userIdentity.type: Root
         selection_ioc_ip:
-            sourceIPAddress: 
+            sourceIPAddress:
+                - 1.2.3.4
+                - 107.191.99.95
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
+            userAgent|contains: aws-sdk-go/1.4.10 (go1.8.3; linux; amd64)
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
     level: 
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.defense_evasion
+        - attack.t1578
+        - attack.t1578.005
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: ec2.amazonaws.com
+            eventName: AuthorizeSecurityGroupIngress
+            userIdentity.type: Root
         selection_ioc_ip:
-            sourceIPAddress: 
+            sourceIPAddress:
+                - 1.2.3.4
+                - 107.191.99.95
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
+            userAgent|contains: aws-sdk-go/1.4.10 (go1.8.3; linux; amd64)
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
     level: 
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.defense_evasion
+        - attack.t1578
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: ec2.amazonaws.com
+            eventName: CreateTags
+            userIdentity.type: Root
         selection_ioc_ip:
-            sourceIPAddress: 
+            sourceIPAddress:
+                - 1.2.3.4
+                - 107.191.99.95
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
+            userAgent|contains: aws-sdk-go/1.4.10 (go1.8.3; linux; amd64)
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
     level: 
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.impact
+        - attack.t1496
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: ec2.amazonaws.com
+            eventName: RunInstances
+            userIdentity.type: Root
+            requestParameters.instanceType: c5.4xlarge
         selection_ioc_ip:
-            sourceIPAddress: 
+            sourceIPAddress:
+                - 1.2.3.4
+                - 107.191.99.95
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
+            userAgent|contains: aws-sdk-go/1.4.10 (go1.8.3; linux; amd64)
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
     level: 
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.persistence
+        - attack.t1098
+        - attack.t1098.001
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: ec2.amazonaws.com
+            eventName: ImportKeyPair
+            userIdentity.type: Root
         selection_ioc_ip:
-            sourceIPAddress: 
+            sourceIPAddress:
+                - 1.2.3.4
+                - 107.191.99.95
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
-    logsource:
-        product: aws
-        service: cloudtrail
-    detection:
-        selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
-    logsource:
-        product: aws
-        service: cloudtrail
-    detection:
-        selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
-    logsource:
-        product: aws
-        service: cloudtrail
-    detection:
-        selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
-    logsource:
-        product: aws
-        service: cloudtrail
-    detection:
-        selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
+            userAgent|contains: aws-sdk-go/1.4.10 (go1.8.3; linux; amd64)
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
     level: 

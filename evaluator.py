@@ -390,9 +390,9 @@ def main(file_prefixes: list[str]):
 
 if __name__ == "__main__":
     file_prefixes = []
-    file_prefixes.append('anatomy_of_attack_exposed_keys_to_crypto_mining')
+    # file_prefixes.append('anatomy_of_attack_exposed_keys_to_crypto_mining')
     # file_prefixes.append('behind_the_scenes_expel_soc_alert_aws')
-    # file_prefixes.append('cloud_breach_terraform_data_theft')
+    file_prefixes.append('cloud_breach_terraform_data_theft')
     # file_prefixes.append('compromised_cloud_compute_credentials_(case_1)')
     # file_prefixes.append('detecting-ai-resource-hijacking-with-composite-alerts')
     # file_prefixes.append('finding-evil-in-aws')
