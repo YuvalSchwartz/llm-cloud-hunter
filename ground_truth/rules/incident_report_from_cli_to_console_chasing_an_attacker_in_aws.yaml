@@ -1,170 +1,134 @@
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.t1087
+        - attack.t1087.004
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: iam.amazonaws.com
+            eventName: ListUsers
         selection_ioc_ip:
-            sourceIPAddress: 
+            sourceIPAddress: 124.158.184.198
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
+            userAgent|contains:
+                - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36
+                - aws-cli/2.3.0
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    level: low
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.initial_access
+        - attack.t1078
+        - attack.t1078.004
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventName: ConsoleLogin
+            eventSource: signin.amazonaws.com
+            userIdentity.type: IAMUser
+            additionalEventData.MFAUsed: 'No'
         selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
+            sourceIPAddress|startswith:
+                - 124.158.184.198
+        condition: selection and selection_ioc_ip
+    level: high
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.persistence
+        - attack.t1098
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
+            eventName: UpdateLoginProfile
+            eventSource: iam.amazonaws.com
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
+            userAgent|contains: aws-cli
+        condition: selection and selection_ioc_ua
+    level: high
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.persistence
+        - attack.t1136
+        - attack.t1136.003
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventName: CreateUser
+            eventSource: iam.amazonaws.com
         selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
+            sourceIPAddress|startswith:
+                - 124.158.184.198
+        condition: selection and selection_ioc_ip
+    level: high
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.persistence
+        - attack.t1098
+        - attack.t1098.001
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: iam.amazonaws.com
+            eventName:
+            - CreateAccessKey
+            - CreateLoginProfile
         selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
+            sourceIPAddress|startswith:
+                - 124.158.184.198
+        condition: selection and selection_ioc_ip
+    level: high
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.privilege_escalation
+        - attack.t1078
+        - attack.t1078.004
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventName: AttachUserPolicy
+            eventSource: iam.amazonaws.com
+            requestParameters.policyArn|endswith: 'AdministratorAccess'
         selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
+            sourceIPAddress|startswith:
+                - 124.158.184.198
+        condition: selection and selection_ioc_ip
+    level: high
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.impact
+        - attack.t1496
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventName: RequestServiceQuotaIncrease
+            eventSource: servicequotas.amazonaws.com
+            requestParameters.ServiceCode: 'ec2'
         selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
+            sourceIPAddress|startswith:
+                - 124.158.184.198
+        condition: selection and selection_ioc_ip
+    level: medium
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.t1496
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: servicequotas.amazonaws.com
+            eventName: RequestServiceQuotaIncrease
         selection_ioc_ip:
-            sourceIPAddress: 
+            sourceIPAddress: 124.158.184.198
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
-    logsource:
-        product: aws
-        service: cloudtrail
-    detection:
-        selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
-    logsource:
-        product: aws
-        service: cloudtrail
-    detection:
-        selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
+            userAgent|contains:
+                - Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36
+                - aws-cli/2.3.0
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    level: medium
