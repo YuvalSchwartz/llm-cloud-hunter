@@ -1,170 +1,69 @@
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.discovery
+        - attack.t1087
+        - attack.t1087.004
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
+            eventSource: iam.amazonaws.com
+            eventName: ListUsers
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
+            userAgent|contains:
+                - aws-cli/1.22.34 Python/3.9.11 Linux/5.15.0-kali3-amd64 botocore/1.27.84
+                - aws-cli/1.22.34 Python/3.9.11 Linux/5.1
+                - aws-cli/2.7.35 Python/3.9.11 Windows/1
+        condition: selection and selection_ioc_ua
+    level: low
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.discovery
+        - attack.t1526
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
+            eventSource: email.amazonaws.com
+            eventName: GetSendQuota
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
+            userAgent|contains:
+                - aws-cli/1.22.34 Python/3.9.11 Linux/5.15.0-kali3-amd64 botocore/1.27.84
+                - aws-cli/1.22.34 Python/3.9.11 Linux/5.1
+                - aws-cli/2.7.35 Python/3.9.11 Windows/1
+        condition: selection and selection_ioc_ua
+    level: medium
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.t1490
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
+            eventSource: email.amazonaws.com
+            eventName: UpdateAccountSendingEnabled
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
+            userAgent|contains:
+                - aws-cli/1.22.34 Python/3.9.11 Linux/5.15.0-kali3-amd64 botocore/1.27.84
+                - aws-cli/1.22.34 Python/3.9.11 Linux/5.1
+                - aws-cli/2.7.35 Python/3.9.11 Windows/1
+        condition: selection and selection_ioc_ua
+    level: high
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.discovery
+        - attack.t1087
+        - attack.t1087.004
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
+            eventSource: sts.amazonaws.com
+            eventName: GetCallerIdentity
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
-    logsource:
-        product: aws
-        service: cloudtrail
-    detection:
-        selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
-    logsource:
-        product: aws
-        service: cloudtrail
-    detection:
-        selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
-    logsource:
-        product: aws
-        service: cloudtrail
-    detection:
-        selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
-    logsource:
-        product: aws
-        service: cloudtrail
-    detection:
-        selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
-    logsource:
-        product: aws
-        service: cloudtrail
-    detection:
-        selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
-    logsource:
-        product: aws
-        service: cloudtrail
-    detection:
-        selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
+            userAgent|contains:
+                - aws-cli/1.22.34 Python/3.9.11 Linux/5.15.0-kali3-amd64 botocore/1.27.84
+                - aws-cli/1.22.34 Python/3.9.11 Linux/5.1
+                - aws-cli/2.7.35 Python/3.9.11 Windows/1
+        condition: selection and selection_ioc_ua
+    level: medium

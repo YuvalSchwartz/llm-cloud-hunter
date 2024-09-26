@@ -1,170 +1,787 @@
--   tags:
-        - attack.
-        - attack.
-        - attack.
+-   title: AWS IAM User Enumeration
+    tags:
+        - attack.discovery
+        - attack.t1087.004
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: iam.amazonaws.com
+            eventName:
+            - ListUsers
+            - ListIdentities
         selection_ioc_ip:
-            sourceIPAddress: 
+            sourceIPAddress:
+                - 139.99.120.65
+                - 139.99.123.180
+                - 139.99.68.31
+                - 164.90.200.10
+                - 193.148.18.59
+                - 198.135.55.189
+                - 198.98.183.38
+                - 212.102.33.34
+                - 64.226.75.246
+                - 95.142.120.45
+                - 95.142.120.58
+                - 95.142.120.75
+                - 114.10.26.42
+                - 114.125.126.25
+                - 120.188.39.58
+                - 125.162.111.178
+                - 140.213.132.181
+                - 140.213.138.160
+                - 140.213.138.35
+                - 158.140.163.5
+                - 180.242.79.14
+                - 180.244.166.155
+                - 182.1.119.185
+                - 182.1.122.169
+                - 182.2.71.61
+                - 36.85.32.120
+                - 36.85.32.129
+                - 36.85.35.148
+                - 36.85.36.50
+                - 36.85.37.4
+                - 36.85.38.180
+                - 36.85.38.45
+                - 36.85.39.118
+                - 36.85.39.21
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
+            userAgent|contains:
+                - Boto3/1.13.14 Python/3.9.2 Linux/5.10.0-21-amd64 Botocore/1.20.0
+                - Boto3/1.24.75 Python/3.9.6 Windows/10 Botocore/1.27.75
+                - Boto3/1.24.84 Python/3.10.7 Windows/2012ServerR2 Botocore/1.27.84
+                - Boto3/1.24.84 Python/3.9.7 Windows/10 Botocore/1.27.84
+                - Boto3/1.25.0 Python/3.10.6 Linux/5.15.0-58-generic Botocore/1.28.0
+                - Boto3/1.26.22 Python/3.9.5 Windows/10 Botocore/1.29.22
+                - Boto3/1.26.40 Python/3.11.1 Windows/2012ServerR2 Botocore/1.29.40
+                - Boto3/1.26.51 Python/3.11.1 Windows/10 exec-env/EC2 Botocore/1.29.51
+                - Boto3/1.26.54 Python/3.11.1 Windows/10 exec-env/EC2 Botocore/1.29.54
+                - Boto3/1.26.60 Python/3.11.1 Windows/10 Botocore/1.29.60
+                - Boto3/1.26.64 Python/3.11.1 Windows/10 Botocore/1.29.64
+                - Boto3/1.26.69 Python/3.8.13 Linux/5.15.0-47-generic Botocore/1.29.69
+                - Boto3/1.26.71 Python/3.11.2 Windows/10 exec-env/EC2 Botocore/1.29.71
+                - Boto3/1.26.76 Python/3.11.2 Windows/10 exec-env/EC2 Botocore/1.29.76
+                - Boto3/1.26.87 Python/3.8.13 Linux/5.15.0-47-generic Botocore/1.29.87
+                - Boto3/1.26.90 Python/3.8.16 Linux/5.4.0-1097-aws Botocore/1.29.90
+                - Boto3/1.26.92 Python/3.11.2 Windows/10 exec-env/EC2 Botocore/1.29.92
+                - aws-cli/1.19.112 Python/2.7.18 Linux/4.4.0-19041-Microsoft botocore/1.20.112
+                - aws-cli/2.7.0 Python/3.9.11 Windows/10 exe/AMD64
+                - aws-cli/1.18.69 Python/3.8.10 Linux/5.4.0-137-generic botocore/1.16.19
+                - aws-cli/1.19.1 Python/3.9.2 Linux/5.10.0-21-cloud-amd64 botocore/1.20.0
+                - aws-cli/1.22.65 Python/3.8.10 Linux/4.4.0-19041-Microsoft botocore/1.27.20
+                - aws-cli/1.24.10 Python/3.6.9 Linux/4.4.0-22621-Microsoft botocore/1.26.10
+                - aws-cli/1.25.17 Python/3.9.7 Windows/10 botocore/1.27.26
+                - aws-cli/1.27.59 Python/3.8.16 Linux/5.4.0-1085-aws botocore/1.29.59
+                - aws-cli/1.27.81 Python/3.8.16 Linux/5.4.0-1085-aws botocore/1.29.81
+                - aws-cli/1.27.83 Python/3.8.16 Linux/5.4.0-1085-aws botocore/1.29.83
+                - aws-cli/2.10.1 Python/3.9.11 Linux/5.15.90.1-microsoft-standard-WSL2 exe
+                - aws-cli/2.10.1 Python/3.9.11 Linux/5.15.90.1-microsoft-standard-WSL2 exe/x86_64.ubuntu.22
+                - aws-cli/2.11.2 Python/3.11.2 Windows/10 exec-env/EC2 exe/AMD64 prompt
+                - aws-cli/2.9.19 Python/3.11.1 Linux/4.4.0-19041-Microsoft source/x86_64.kali.2022
+                - aws-cli/2.9.20 Python/3.9.11 Linux/4.4.0-19041-Microsoft exe/x86_64.ubuntu.18
+                - aws-cli/2.9.23 Python/3.9.11 Windows/10 exec-env/EC2 exe/AMD64
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    level: medium
+-   title: AWS S3 Bucket Enumeration
+    tags:
+        - attack.discovery
+        - attack.t1580
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: s3.amazonaws.com
+            eventName: ListBuckets
         selection_ioc_ip:
-            sourceIPAddress: 
+            sourceIPAddress:
+                - 139.99.120.65
+                - 139.99.123.180
+                - 139.99.68.31
+                - 164.90.200.10
+                - 193.148.18.59
+                - 198.135.55.189
+                - 198.98.183.38
+                - 212.102.33.34
+                - 64.226.75.246
+                - 95.142.120.45
+                - 95.142.120.58
+                - 95.142.120.75
+                - 114.10.26.42
+                - 114.125.126.25
+                - 120.188.39.58
+                - 125.162.111.178
+                - 140.213.132.181
+                - 140.213.138.160
+                - 140.213.138.35
+                - 158.140.163.5
+                - 180.242.79.14
+                - 180.244.166.155
+                - 182.1.119.185
+                - 182.1.122.169
+                - 182.2.71.61
+                - 36.85.32.120
+                - 36.85.32.129
+                - 36.85.35.148
+                - 36.85.36.50
+                - 36.85.37.4
+                - 36.85.38.180
+                - 36.85.38.45
+                - 36.85.39.118
+                - 36.85.39.21
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
+            userAgent|contains:
+                - Boto3/1.13.14 Python/3.9.2 Linux/5.10.0-21-amd64 Botocore/1.20.0
+                - Boto3/1.24.75 Python/3.9.6 Windows/10 Botocore/1.27.75
+                - Boto3/1.24.84 Python/3.10.7 Windows/2012ServerR2 Botocore/1.27.84
+                - Boto3/1.24.84 Python/3.9.7 Windows/10 Botocore/1.27.84
+                - Boto3/1.25.0 Python/3.10.6 Linux/5.15.0-58-generic Botocore/1.28.0
+                - Boto3/1.26.22 Python/3.9.5 Windows/10 Botocore/1.29.22
+                - Boto3/1.26.40 Python/3.11.1 Windows/2012ServerR2 Botocore/1.29.40
+                - Boto3/1.26.51 Python/3.11.1 Windows/10 exec-env/EC2 Botocore/1.29.51
+                - Boto3/1.26.54 Python/3.11.1 Windows/10 exec-env/EC2 Botocore/1.29.54
+                - Boto3/1.26.60 Python/3.11.1 Windows/10 Botocore/1.29.60
+                - Boto3/1.26.64 Python/3.11.1 Windows/10 Botocore/1.29.64
+                - Boto3/1.26.69 Python/3.8.13 Linux/5.15.0-47-generic Botocore/1.29.69
+                - Boto3/1.26.71 Python/3.11.2 Windows/10 exec-env/EC2 Botocore/1.29.71
+                - Boto3/1.26.76 Python/3.11.2 Windows/10 exec-env/EC2 Botocore/1.29.76
+                - Boto3/1.26.87 Python/3.8.13 Linux/5.15.0-47-generic Botocore/1.29.87
+                - Boto3/1.26.90 Python/3.8.16 Linux/5.4.0-1097-aws Botocore/1.29.90
+                - Boto3/1.26.92 Python/3.11.2 Windows/10 exec-env/EC2 Botocore/1.29.92
+                - aws-cli/1.19.112 Python/2.7.18 Linux/4.4.0-19041-Microsoft botocore/1.20.112
+                - aws-cli/2.7.0 Python/3.9.11 Windows/10 exe/AMD64
+                - aws-cli/1.18.69 Python/3.8.10 Linux/5.4.0-137-generic botocore/1.16.19
+                - aws-cli/1.19.1 Python/3.9.2 Linux/5.10.0-21-cloud-amd64 botocore/1.20.0
+                - aws-cli/1.22.65 Python/3.8.10 Linux/4.4.0-19041-Microsoft botocore/1.27.20
+                - aws-cli/1.24.10 Python/3.6.9 Linux/4.4.0-22621-Microsoft botocore/1.26.10
+                - aws-cli/1.25.17 Python/3.9.7 Windows/10 botocore/1.27.26
+                - aws-cli/1.27.59 Python/3.8.16 Linux/5.4.0-1085-aws botocore/1.29.59
+                - aws-cli/1.27.81 Python/3.8.16 Linux/5.4.0-1085-aws botocore/1.29.81
+                - aws-cli/1.27.83 Python/3.8.16 Linux/5.4.0-1085-aws botocore/1.29.83
+                - aws-cli/2.10.1 Python/3.9.11 Linux/5.15.90.1-microsoft-standard-WSL2 exe
+                - aws-cli/2.10.1 Python/3.9.11 Linux/5.15.90.1-microsoft-standard-WSL2 exe/x86_64.ubuntu.22
+                - aws-cli/2.11.2 Python/3.11.2 Windows/10 exec-env/EC2 exe/AMD64 prompt
+                - aws-cli/2.9.19 Python/3.11.1 Linux/4.4.0-19041-Microsoft source/x86_64.kali.2022
+                - aws-cli/2.9.20 Python/3.9.11 Linux/4.4.0-19041-Microsoft exe/x86_64.ubuntu.18
+                - aws-cli/2.9.23 Python/3.9.11 Windows/10 exec-env/EC2 exe/AMD64
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    level: low
+
+-   title: AWS IAM Access Key Enumeration
+    tags:
+        - attack.discovery
+        - attack.t1087.004
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: iam.amazonaws.com
+            eventName:
+            - ListAccessKeys
+            - GetAccount
+            - ListEntities
         selection_ioc_ip:
-            sourceIPAddress: 
+            sourceIPAddress:
+                - 139.99.120.65
+                - 139.99.123.180
+                - 139.99.68.31
+                - 164.90.200.10
+                - 193.148.18.59
+                - 198.135.55.189
+                - 198.98.183.38
+                - 212.102.33.34
+                - 64.226.75.246
+                - 95.142.120.45
+                - 95.142.120.58
+                - 95.142.120.75
+                - 114.10.26.42
+                - 114.125.126.25
+                - 120.188.39.58
+                - 125.162.111.178
+                - 140.213.132.181
+                - 140.213.138.160
+                - 140.213.138.35
+                - 158.140.163.5
+                - 180.242.79.14
+                - 180.244.166.155
+                - 182.1.119.185
+                - 182.1.122.169
+                - 182.2.71.61
+                - 36.85.32.120
+                - 36.85.32.129
+                - 36.85.35.148
+                - 36.85.36.50
+                - 36.85.37.4
+                - 36.85.38.180
+                - 36.85.38.45
+                - 36.85.39.118
+                - 36.85.39.21
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
+            userAgent|contains:
+                - Boto3/1.13.14 Python/3.9.2 Linux/5.10.0-21-amd64 Botocore/1.20.0
+                - Boto3/1.24.75 Python/3.9.6 Windows/10 Botocore/1.27.75
+                - Boto3/1.24.84 Python/3.10.7 Windows/2012ServerR2 Botocore/1.27.84
+                - Boto3/1.24.84 Python/3.9.7 Windows/10 Botocore/1.27.84
+                - Boto3/1.25.0 Python/3.10.6 Linux/5.15.0-58-generic Botocore/1.28.0
+                - Boto3/1.26.22 Python/3.9.5 Windows/10 Botocore/1.29.22
+                - Boto3/1.26.40 Python/3.11.1 Windows/2012ServerR2 Botocore/1.29.40
+                - Boto3/1.26.51 Python/3.11.1 Windows/10 exec-env/EC2 Botocore/1.29.51
+                - Boto3/1.26.54 Python/3.11.1 Windows/10 exec-env/EC2 Botocore/1.29.54
+                - Boto3/1.26.60 Python/3.11.1 Windows/10 Botocore/1.29.60
+                - Boto3/1.26.64 Python/3.11.1 Windows/10 Botocore/1.29.64
+                - Boto3/1.26.69 Python/3.8.13 Linux/5.15.0-47-generic Botocore/1.29.69
+                - Boto3/1.26.71 Python/3.11.2 Windows/10 exec-env/EC2 Botocore/1.29.71
+                - Boto3/1.26.76 Python/3.11.2 Windows/10 exec-env/EC2 Botocore/1.29.76
+                - Boto3/1.26.87 Python/3.8.13 Linux/5.15.0-47-generic Botocore/1.29.87
+                - Boto3/1.26.90 Python/3.8.16 Linux/5.4.0-1097-aws Botocore/1.29.90
+                - Boto3/1.26.92 Python/3.11.2 Windows/10 exec-env/EC2 Botocore/1.29.92
+                - aws-cli/1.19.112 Python/2.7.18 Linux/4.4.0-19041-Microsoft botocore/1.20.112
+                - aws-cli/2.7.0 Python/3.9.11 Windows/10 exe/AMD64
+                - aws-cli/1.18.69 Python/3.8.10 Linux/5.4.0-137-generic botocore/1.16.19
+                - aws-cli/1.19.1 Python/3.9.2 Linux/5.10.0-21-cloud-amd64 botocore/1.20.0
+                - aws-cli/1.22.65 Python/3.8.10 Linux/4.4.0-19041-Microsoft botocore/1.27.20
+                - aws-cli/1.24.10 Python/3.6.9 Linux/4.4.0-22621-Microsoft botocore/1.26.10
+                - aws-cli/1.25.17 Python/3.9.7 Windows/10 botocore/1.27.26
+                - aws-cli/1.27.59 Python/3.8.16 Linux/5.4.0-1085-aws botocore/1.29.59
+                - aws-cli/1.27.81 Python/3.8.16 Linux/5.4.0-1085-aws botocore/1.29.81
+                - aws-cli/1.27.83 Python/3.8.16 Linux/5.4.0-1085-aws botocore/1.29.83
+                - aws-cli/2.10.1 Python/3.9.11 Linux/5.15.90.1-microsoft-standard-WSL2 exe
+                - aws-cli/2.10.1 Python/3.9.11 Linux/5.15.90.1-microsoft-standard-WSL2 exe/x86_64.ubuntu.22
+                - aws-cli/2.11.2 Python/3.11.2 Windows/10 exec-env/EC2 exe/AMD64 prompt
+                - aws-cli/2.9.19 Python/3.11.1 Linux/4.4.0-19041-Microsoft source/x86_64.kali.2022
+                - aws-cli/2.9.20 Python/3.9.11 Linux/4.4.0-19041-Microsoft exe/x86_64.ubuntu.18
+                - aws-cli/2.9.23 Python/3.9.11 Windows/10 exec-env/EC2 exe/AMD64
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    level: medium
+
+-   title: AWS Service Quota Enumeration
+    tags:
+        - attack.discovery
+        - attack.t1526
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: servicequotas.amazonaws.com
+            eventName: ListServiceQuotas
         selection_ioc_ip:
-            sourceIPAddress: 
+            sourceIPAddress:
+                - 139.99.120.65
+                - 139.99.123.180
+                - 139.99.68.31
+                - 164.90.200.10
+                - 193.148.18.59
+                - 198.135.55.189
+                - 198.98.183.38
+                - 212.102.33.34
+                - 64.226.75.246
+                - 95.142.120.45
+                - 95.142.120.58
+                - 95.142.120.75
+                - 114.10.26.42
+                - 114.125.126.25
+                - 120.188.39.58
+                - 125.162.111.178
+                - 140.213.132.181
+                - 140.213.138.160
+                - 140.213.138.35
+                - 158.140.163.5
+                - 180.242.79.14
+                - 180.244.166.155
+                - 182.1.119.185
+                - 182.1.122.169
+                - 182.2.71.61
+                - 36.85.32.120
+                - 36.85.32.129
+                - 36.85.35.148
+                - 36.85.36.50
+                - 36.85.37.4
+                - 36.85.38.180
+                - 36.85.38.45
+                - 36.85.39.118
+                - 36.85.39.21
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
+            userAgent|contains:
+                - Boto3/1.13.14 Python/3.9.2 Linux/5.10.0-21-amd64 Botocore/1.20.0
+                - Boto3/1.24.75 Python/3.9.6 Windows/10 Botocore/1.27.75
+                - Boto3/1.24.84 Python/3.10.7 Windows/2012ServerR2 Botocore/1.27.84
+                - Boto3/1.24.84 Python/3.9.7 Windows/10 Botocore/1.27.84
+                - Boto3/1.25.0 Python/3.10.6 Linux/5.15.0-58-generic Botocore/1.28.0
+                - Boto3/1.26.22 Python/3.9.5 Windows/10 Botocore/1.29.22
+                - Boto3/1.26.40 Python/3.11.1 Windows/2012ServerR2 Botocore/1.29.40
+                - Boto3/1.26.51 Python/3.11.1 Windows/10 exec-env/EC2 Botocore/1.29.51
+                - Boto3/1.26.54 Python/3.11.1 Windows/10 exec-env/EC2 Botocore/1.29.54
+                - Boto3/1.26.60 Python/3.11.1 Windows/10 Botocore/1.29.60
+                - Boto3/1.26.64 Python/3.11.1 Windows/10 Botocore/1.29.64
+                - Boto3/1.26.69 Python/3.8.13 Linux/5.15.0-47-generic Botocore/1.29.69
+                - Boto3/1.26.71 Python/3.11.2 Windows/10 exec-env/EC2 Botocore/1.29.71
+                - Boto3/1.26.76 Python/3.11.2 Windows/10 exec-env/EC2 Botocore/1.29.76
+                - Boto3/1.26.87 Python/3.8.13 Linux/5.15.0-47-generic Botocore/1.29.87
+                - Boto3/1.26.90 Python/3.8.16 Linux/5.4.0-1097-aws Botocore/1.29.90
+                - Boto3/1.26.92 Python/3.11.2 Windows/10 exec-env/EC2 Botocore/1.29.92
+                - aws-cli/1.19.112 Python/2.7.18 Linux/4.4.0-19041-Microsoft botocore/1.20.112
+                - aws-cli/2.7.0 Python/3.9.11 Windows/10 exe/AMD64
+                - aws-cli/1.18.69 Python/3.8.10 Linux/5.4.0-137-generic botocore/1.16.19
+                - aws-cli/1.19.1 Python/3.9.2 Linux/5.10.0-21-cloud-amd64 botocore/1.20.0
+                - aws-cli/1.22.65 Python/3.8.10 Linux/4.4.0-19041-Microsoft botocore/1.27.20
+                - aws-cli/1.24.10 Python/3.6.9 Linux/4.4.0-22621-Microsoft botocore/1.26.10
+                - aws-cli/1.25.17 Python/3.9.7 Windows/10 botocore/1.27.26
+                - aws-cli/1.27.59 Python/3.8.16 Linux/5.4.0-1085-aws botocore/1.29.59
+                - aws-cli/1.27.81 Python/3.8.16 Linux/5.4.0-1085-aws botocore/1.29.81
+                - aws-cli/1.27.83 Python/3.8.16 Linux/5.4.0-1085-aws botocore/1.29.83
+                - aws-cli/2.10.1 Python/3.9.11 Linux/5.15.90.1-microsoft-standard-WSL2 exe
+                - aws-cli/2.10.1 Python/3.9.11 Linux/5.15.90.1-microsoft-standard-WSL2 exe/x86_64.ubuntu.22
+                - aws-cli/2.11.2 Python/3.11.2 Windows/10 exec-env/EC2 exe/AMD64 prompt
+                - aws-cli/2.9.19 Python/3.11.1 Linux/4.4.0-19041-Microsoft source/x86_64.kali.2022
+                - aws-cli/2.9.20 Python/3.9.11 Linux/4.4.0-19041-Microsoft exe/x86_64.ubuntu.18
+                - aws-cli/2.9.23 Python/3.9.11 Windows/10 exec-env/EC2 exe/AMD64
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    level: low
+
+-   title: AWS SES Send Quota Retrieval
+    tags:
+        - attack.discovery
+        - attack.t1526
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: ses.amazonaws.com
+            eventName: GetSendQuota
         selection_ioc_ip:
-            sourceIPAddress: 
+            sourceIPAddress:
+                - 139.99.120.65
+                - 139.99.123.180
+                - 139.99.68.31
+                - 164.90.200.10
+                - 193.148.18.59
+                - 198.135.55.189
+                - 198.98.183.38
+                - 212.102.33.34
+                - 64.226.75.246
+                - 95.142.120.45
+                - 95.142.120.58
+                - 95.142.120.75
+                - 114.10.26.42
+                - 114.125.126.25
+                - 120.188.39.58
+                - 125.162.111.178
+                - 140.213.132.181
+                - 140.213.138.160
+                - 140.213.138.35
+                - 158.140.163.5
+                - 180.242.79.14
+                - 180.244.166.155
+                - 182.1.119.185
+                - 182.1.122.169
+                - 182.2.71.61
+                - 36.85.32.120
+                - 36.85.32.129
+                - 36.85.35.148
+                - 36.85.36.50
+                - 36.85.37.4
+                - 36.85.38.180
+                - 36.85.38.45
+                - 36.85.39.118
+                - 36.85.39.21
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
+            userAgent|contains:
+                - Boto3/1.13.14 Python/3.9.2 Linux/5.10.0-21-amd64 Botocore/1.20.0
+                - Boto3/1.24.75 Python/3.9.6 Windows/10 Botocore/1.27.75
+                - Boto3/1.24.84 Python/3.10.7 Windows/2012ServerR2 Botocore/1.27.84
+                - Boto3/1.24.84 Python/3.9.7 Windows/10 Botocore/1.27.84
+                - Boto3/1.25.0 Python/3.10.6 Linux/5.15.0-58-generic Botocore/1.28.0
+                - Boto3/1.26.22 Python/3.9.5 Windows/10 Botocore/1.29.22
+                - Boto3/1.26.40 Python/3.11.1 Windows/2012ServerR2 Botocore/1.29.40
+                - Boto3/1.26.51 Python/3.11.1 Windows/10 exec-env/EC2 Botocore/1.29.51
+                - Boto3/1.26.54 Python/3.11.1 Windows/10 exec-env/EC2 Botocore/1.29.54
+                - Boto3/1.26.60 Python/3.11.1 Windows/10 Botocore/1.29.60
+                - Boto3/1.26.64 Python/3.11.1 Windows/10 Botocore/1.29.64
+                - Boto3/1.26.69 Python/3.8.13 Linux/5.15.0-47-generic Botocore/1.29.69
+                - Boto3/1.26.71 Python/3.11.2 Windows/10 exec-env/EC2 Botocore/1.29.71
+                - Boto3/1.26.76 Python/3.11.2 Windows/10 exec-env/EC2 Botocore/1.29.76
+                - Boto3/1.26.87 Python/3.8.13 Linux/5.15.0-47-generic Botocore/1.29.87
+                - Boto3/1.26.90 Python/3.8.16 Linux/5.4.0-1097-aws Botocore/1.29.90
+                - Boto3/1.26.92 Python/3.11.2 Windows/10 exec-env/EC2 Botocore/1.29.92
+                - aws-cli/1.19.112 Python/2.7.18 Linux/4.4.0-19041-Microsoft botocore/1.20.112
+                - aws-cli/2.7.0 Python/3.9.11 Windows/10 exe/AMD64
+                - aws-cli/1.18.69 Python/3.8.10 Linux/5.4.0-137-generic botocore/1.16.19
+                - aws-cli/1.19.1 Python/3.9.2 Linux/5.10.0-21-cloud-amd64 botocore/1.20.0
+                - aws-cli/1.22.65 Python/3.8.10 Linux/4.4.0-19041-Microsoft botocore/1.27.20
+                - aws-cli/1.24.10 Python/3.6.9 Linux/4.4.0-22621-Microsoft botocore/1.26.10
+                - aws-cli/1.25.17 Python/3.9.7 Windows/10 botocore/1.27.26
+                - aws-cli/1.27.59 Python/3.8.16 Linux/5.4.0-1085-aws botocore/1.29.59
+                - aws-cli/1.27.81 Python/3.8.16 Linux/5.4.0-1085-aws botocore/1.29.81
+                - aws-cli/1.27.83 Python/3.8.16 Linux/5.4.0-1085-aws botocore/1.29.83
+                - aws-cli/2.10.1 Python/3.9.11 Linux/5.15.90.1-microsoft-standard-WSL2 exe
+                - aws-cli/2.10.1 Python/3.9.11 Linux/5.15.90.1-microsoft-standard-WSL2 exe/x86_64.ubuntu.22
+                - aws-cli/2.11.2 Python/3.11.2 Windows/10 exec-env/EC2 exe/AMD64 prompt
+                - aws-cli/2.9.19 Python/3.11.1 Linux/4.4.0-19041-Microsoft source/x86_64.kali.2022
+                - aws-cli/2.9.20 Python/3.9.11 Linux/4.4.0-19041-Microsoft exe/x86_64.ubuntu.18
+                - aws-cli/2.9.23 Python/3.9.11 Windows/10 exec-env/EC2 exe/AMD64
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    level: low
+
+-   title: AWS S3 Bucket Versioning Check
+    tags:
+        - attack.discovery
+        - attack.t1526
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
+            eventSource: s3.amazonaws.com
+            eventName: GetBucketVersioning
+        condition: selection
+    level: medium
+
+-   title: AWS S3 Bucket Versioning Modification
+    tags:
+        - attack.impact
+        - attack.t1485
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: s3.amazonaws.com
+            eventName: PutBucketVersioning
         selection_ioc_ip:
-            sourceIPAddress: 
+            sourceIPAddress:
+                - 139.99.120.65
+                - 139.99.123.180
+                - 139.99.68.31
+                - 164.90.200.10
+                - 193.148.18.59
+                - 198.135.55.189
+                - 198.98.183.38
+                - 212.102.33.34
+                - 64.226.75.246
+                - 95.142.120.45
+                - 95.142.120.58
+                - 95.142.120.75
+                - 114.10.26.42
+                - 114.125.126.25
+                - 120.188.39.58
+                - 125.162.111.178
+                - 140.213.132.181
+                - 140.213.138.160
+                - 140.213.138.35
+                - 158.140.163.5
+                - 180.242.79.14
+                - 180.244.166.155
+                - 182.1.119.185
+                - 182.1.122.169
+                - 182.2.71.61
+                - 36.85.32.120
+                - 36.85.32.129
+                - 36.85.35.148
+                - 36.85.36.50
+                - 36.85.37.4
+                - 36.85.38.180
+                - 36.85.38.45
+                - 36.85.39.118
+                - 36.85.39.21
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
+            userAgent|contains:
+                - Boto3/1.13.14 Python/3.9.2 Linux/5.10.0-21-amd64 Botocore/1.20.0
+                - Boto3/1.24.75 Python/3.9.6 Windows/10 Botocore/1.27.75
+                - Boto3/1.24.84 Python/3.10.7 Windows/2012ServerR2 Botocore/1.27.84
+                - Boto3/1.24.84 Python/3.9.7 Windows/10 Botocore/1.27.84
+                - Boto3/1.25.0 Python/3.10.6 Linux/5.15.0-58-generic Botocore/1.28.0
+                - Boto3/1.26.22 Python/3.9.5 Windows/10 Botocore/1.29.22
+                - Boto3/1.26.40 Python/3.11.1 Windows/2012ServerR2 Botocore/1.29.40
+                - Boto3/1.26.51 Python/3.11.1 Windows/10 exec-env/EC2 Botocore/1.29.51
+                - Boto3/1.26.54 Python/3.11.1 Windows/10 exec-env/EC2 Botocore/1.29.54
+                - Boto3/1.26.60 Python/3.11.1 Windows/10 Botocore/1.29.60
+                - Boto3/1.26.64 Python/3.11.1 Windows/10 Botocore/1.29.64
+                - Boto3/1.26.69 Python/3.8.13 Linux/5.15.0-47-generic Botocore/1.29.69
+                - Boto3/1.26.71 Python/3.11.2 Windows/10 exec-env/EC2 Botocore/1.29.71
+                - Boto3/1.26.76 Python/3.11.2 Windows/10 exec-env/EC2 Botocore/1.29.76
+                - Boto3/1.26.87 Python/3.8.13 Linux/5.15.0-47-generic Botocore/1.29.87
+                - Boto3/1.26.90 Python/3.8.16 Linux/5.4.0-1097-aws Botocore/1.29.90
+                - Boto3/1.26.92 Python/3.11.2 Windows/10 exec-env/EC2 Botocore/1.29.92
+                - aws-cli/1.19.112 Python/2.7.18 Linux/4.4.0-19041-Microsoft botocore/1.20.112
+                - aws-cli/2.7.0 Python/3.9.11 Windows/10 exe/AMD64
+                - aws-cli/1.18.69 Python/3.8.10 Linux/5.4.0-137-generic botocore/1.16.19
+                - aws-cli/1.19.1 Python/3.9.2 Linux/5.10.0-21-cloud-amd64 botocore/1.20.0
+                - aws-cli/1.22.65 Python/3.8.10 Linux/4.4.0-19041-Microsoft botocore/1.27.20
+                - aws-cli/1.24.10 Python/3.6.9 Linux/4.4.0-22621-Microsoft botocore/1.26.10
+                - aws-cli/1.25.17 Python/3.9.7 Windows/10 botocore/1.27.26
+                - aws-cli/1.27.59 Python/3.8.16 Linux/5.4.0-1085-aws botocore/1.29.59
+                - aws-cli/1.27.81 Python/3.8.16 Linux/5.4.0-1085-aws botocore/1.29.81
+                - aws-cli/1.27.83 Python/3.8.16 Linux/5.4.0-1085-aws botocore/1.29.83
+                - aws-cli/2.10.1 Python/3.9.11 Linux/5.15.90.1-microsoft-standard-WSL2 exe
+                - aws-cli/2.10.1 Python/3.9.11 Linux/5.15.90.1-microsoft-standard-WSL2 exe/x86_64.ubuntu.22
+                - aws-cli/2.11.2 Python/3.11.2 Windows/10 exec-env/EC2 exe/AMD64 prompt
+                - aws-cli/2.9.19 Python/3.11.1 Linux/4.4.0-19041-Microsoft source/x86_64.kali.2022
+                - aws-cli/2.9.20 Python/3.9.11 Linux/4.4.0-19041-Microsoft exe/x86_64.ubuntu.18
+                - aws-cli/2.9.23 Python/3.9.11 Windows/10 exec-env/EC2 exe/AMD64
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    level: high
+-   title: a
+    tags:
+        - attack.1565
+        - attack.1565.001
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: s3.amazonaws.com
+            eventName: PutObject
         selection_ioc_ip:
-            sourceIPAddress: 
+            sourceIPAddress:
+                - 139.99.120.65
+                - 139.99.123.180
+                - 139.99.68.31
+                - 164.90.200.10
+                - 193.148.18.59
+                - 198.135.55.189
+                - 198.98.183.38
+                - 212.102.33.34
+                - 64.226.75.246
+                - 95.142.120.45
+                - 95.142.120.58
+                - 95.142.120.75
+                - 114.10.26.42
+                - 114.125.126.25
+                - 120.188.39.58
+                - 125.162.111.178
+                - 140.213.132.181
+                - 140.213.138.160
+                - 140.213.138.35
+                - 158.140.163.5
+                - 180.242.79.14
+                - 180.244.166.155
+                - 182.1.119.185
+                - 182.1.122.169
+                - 182.2.71.61
+                - 36.85.32.120
+                - 36.85.32.129
+                - 36.85.35.148
+                - 36.85.36.50
+                - 36.85.37.4
+                - 36.85.38.180
+                - 36.85.38.45
+                - 36.85.39.118
+                - 36.85.39.21
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
+            userAgent|contains:
+                - Boto3/1.13.14 Python/3.9.2 Linux/5.10.0-21-amd64 Botocore/1.20.0
+                - Boto3/1.24.75 Python/3.9.6 Windows/10 Botocore/1.27.75
+                - Boto3/1.24.84 Python/3.10.7 Windows/2012ServerR2 Botocore/1.27.84
+                - Boto3/1.24.84 Python/3.9.7 Windows/10 Botocore/1.27.84
+                - Boto3/1.25.0 Python/3.10.6 Linux/5.15.0-58-generic Botocore/1.28.0
+                - Boto3/1.26.22 Python/3.9.5 Windows/10 Botocore/1.29.22
+                - Boto3/1.26.40 Python/3.11.1 Windows/2012ServerR2 Botocore/1.29.40
+                - Boto3/1.26.51 Python/3.11.1 Windows/10 exec-env/EC2 Botocore/1.29.51
+                - Boto3/1.26.54 Python/3.11.1 Windows/10 exec-env/EC2 Botocore/1.29.54
+                - Boto3/1.26.60 Python/3.11.1 Windows/10 Botocore/1.29.60
+                - Boto3/1.26.64 Python/3.11.1 Windows/10 Botocore/1.29.64
+                - Boto3/1.26.69 Python/3.8.13 Linux/5.15.0-47-generic Botocore/1.29.69
+                - Boto3/1.26.71 Python/3.11.2 Windows/10 exec-env/EC2 Botocore/1.29.71
+                - Boto3/1.26.76 Python/3.11.2 Windows/10 exec-env/EC2 Botocore/1.29.76
+                - Boto3/1.26.87 Python/3.8.13 Linux/5.15.0-47-generic Botocore/1.29.87
+                - Boto3/1.26.90 Python/3.8.16 Linux/5.4.0-1097-aws Botocore/1.29.90
+                - Boto3/1.26.92 Python/3.11.2 Windows/10 exec-env/EC2 Botocore/1.29.92
+                - aws-cli/1.19.112 Python/2.7.18 Linux/4.4.0-19041-Microsoft botocore/1.20.112
+                - aws-cli/2.7.0 Python/3.9.11 Windows/10 exe/AMD64
+                - aws-cli/1.18.69 Python/3.8.10 Linux/5.4.0-137-generic botocore/1.16.19
+                - aws-cli/1.19.1 Python/3.9.2 Linux/5.10.0-21-cloud-amd64 botocore/1.20.0
+                - aws-cli/1.22.65 Python/3.8.10 Linux/4.4.0-19041-Microsoft botocore/1.27.20
+                - aws-cli/1.24.10 Python/3.6.9 Linux/4.4.0-22621-Microsoft botocore/1.26.10
+                - aws-cli/1.25.17 Python/3.9.7 Windows/10 botocore/1.27.26
+                - aws-cli/1.27.59 Python/3.8.16 Linux/5.4.0-1085-aws botocore/1.29.59
+                - aws-cli/1.27.81 Python/3.8.16 Linux/5.4.0-1085-aws botocore/1.29.81
+                - aws-cli/1.27.83 Python/3.8.16 Linux/5.4.0-1085-aws botocore/1.29.83
+                - aws-cli/2.10.1 Python/3.9.11 Linux/5.15.90.1-microsoft-standard-WSL2 exe
+                - aws-cli/2.10.1 Python/3.9.11 Linux/5.15.90.1-microsoft-standard-WSL2 exe/x86_64.ubuntu.22
+                - aws-cli/2.11.2 Python/3.11.2 Windows/10 exec-env/EC2 exe/AMD64 prompt
+                - aws-cli/2.9.19 Python/3.11.1 Linux/4.4.0-19041-Microsoft source/x86_64.kali.2022
+                - aws-cli/2.9.20 Python/3.9.11 Linux/4.4.0-19041-Microsoft exe/x86_64.ubuntu.18
+                - aws-cli/2.9.23 Python/3.9.11 Windows/10 exec-env/EC2 exe/AMD64
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    level: high
+-   title: AWS IAM User Creation Attempt
+    tags:
+        - attack.persistence
+        - attack.t1136
+        - attack.t1136.003
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: iam.amazonaws.com
+            eventName: CreateUser
+            requestParameters:
+                userName|re:
+                    - ^root$
+                    - ^adminz$
+                    - ^deploy$
+                    - ^s3mize$
+                    - ^ses-smtp-user\..*
         selection_ioc_ip:
-            sourceIPAddress: 
+            sourceIPAddress:
+                - 139.99.120.65
+                - 139.99.123.180
+                - 139.99.68.31
+                - 164.90.200.10
+                - 193.148.18.59
+                - 198.135.55.189
+                - 198.98.183.38
+                - 212.102.33.34
+                - 64.226.75.246
+                - 95.142.120.45
+                - 95.142.120.58
+                - 95.142.120.75
+                - 114.10.26.42
+                - 114.125.126.25
+                - 120.188.39.58
+                - 125.162.111.178
+                - 140.213.132.181
+                - 140.213.138.160
+                - 140.213.138.35
+                - 158.140.163.5
+                - 180.242.79.14
+                - 180.244.166.155
+                - 182.1.119.185
+                - 182.1.122.169
+                - 182.2.71.61
+                - 36.85.32.120
+                - 36.85.32.129
+                - 36.85.35.148
+                - 36.85.36.50
+                - 36.85.37.4
+                - 36.85.38.180
+                - 36.85.38.45
+                - 36.85.39.118
+                - 36.85.39.21
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
+            userAgent|contains:
+                - Boto3/1.13.14 Python/3.9.2 Linux/5.10.0-21-amd64 Botocore/1.20.0
+                - Boto3/1.24.75 Python/3.9.6 Windows/10 Botocore/1.27.75
+                - Boto3/1.24.84 Python/3.10.7 Windows/2012ServerR2 Botocore/1.27.84
+                - Boto3/1.24.84 Python/3.9.7 Windows/10 Botocore/1.27.84
+                - Boto3/1.25.0 Python/3.10.6 Linux/5.15.0-58-generic Botocore/1.28.0
+                - Boto3/1.26.22 Python/3.9.5 Windows/10 Botocore/1.29.22
+                - Boto3/1.26.40 Python/3.11.1 Windows/2012ServerR2 Botocore/1.29.40
+                - Boto3/1.26.51 Python/3.11.1 Windows/10 exec-env/EC2 Botocore/1.29.51
+                - Boto3/1.26.54 Python/3.11.1 Windows/10 exec-env/EC2 Botocore/1.29.54
+                - Boto3/1.26.60 Python/3.11.1 Windows/10 Botocore/1.29.60
+                - Boto3/1.26.64 Python/3.11.1 Windows/10 Botocore/1.29.64
+                - Boto3/1.26.69 Python/3.8.13 Linux/5.15.0-47-generic Botocore/1.29.69
+                - Boto3/1.26.71 Python/3.11.2 Windows/10 exec-env/EC2 Botocore/1.29.71
+                - Boto3/1.26.76 Python/3.11.2 Windows/10 exec-env/EC2 Botocore/1.29.76
+                - Boto3/1.26.87 Python/3.8.13 Linux/5.15.0-47-generic Botocore/1.29.87
+                - Boto3/1.26.90 Python/3.8.16 Linux/5.4.0-1097-aws Botocore/1.29.90
+                - Boto3/1.26.92 Python/3.11.2 Windows/10 exec-env/EC2 Botocore/1.29.92
+                - aws-cli/1.19.112 Python/2.7.18 Linux/4.4.0-19041-Microsoft botocore/1.20.112
+                - aws-cli/2.7.0 Python/3.9.11 Windows/10 exe/AMD64
+                - aws-cli/1.18.69 Python/3.8.10 Linux/5.4.0-137-generic botocore/1.16.19
+                - aws-cli/1.19.1 Python/3.9.2 Linux/5.10.0-21-cloud-amd64 botocore/1.20.0
+                - aws-cli/1.22.65 Python/3.8.10 Linux/4.4.0-19041-Microsoft botocore/1.27.20
+                - aws-cli/1.24.10 Python/3.6.9 Linux/4.4.0-22621-Microsoft botocore/1.26.10
+                - aws-cli/1.25.17 Python/3.9.7 Windows/10 botocore/1.27.26
+                - aws-cli/1.27.59 Python/3.8.16 Linux/5.4.0-1085-aws botocore/1.29.59
+                - aws-cli/1.27.81 Python/3.8.16 Linux/5.4.0-1085-aws botocore/1.29.81
+                - aws-cli/1.27.83 Python/3.8.16 Linux/5.4.0-1085-aws botocore/1.29.83
+                - aws-cli/2.10.1 Python/3.9.11 Linux/5.15.90.1-microsoft-standard-WSL2 exe
+                - aws-cli/2.10.1 Python/3.9.11 Linux/5.15.90.1-microsoft-standard-WSL2 exe/x86_64.ubuntu.22
+                - aws-cli/2.11.2 Python/3.11.2 Windows/10 exec-env/EC2 exe/AMD64 prompt
+                - aws-cli/2.9.19 Python/3.11.1 Linux/4.4.0-19041-Microsoft source/x86_64.kali.2022
+                - aws-cli/2.9.20 Python/3.9.11 Linux/4.4.0-19041-Microsoft exe/x86_64.ubuntu.18
+                - aws-cli/2.9.23 Python/3.9.11 Windows/10 exec-env/EC2 exe/AMD64
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    level: high
+-   title: AWS S3 Object Retrieval
+    tags:
+        - attack.exfiltration
+        - attack.t1530
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: s3.amazonaws.com
+            eventName: GetObject
         selection_ioc_ip:
-            sourceIPAddress: 
+            sourceIPAddress:
+                - 139.99.120.65
+                - 139.99.123.180
+                - 139.99.68.31
+                - 164.90.200.10
+                - 193.148.18.59
+                - 198.135.55.189
+                - 198.98.183.38
+                - 212.102.33.34
+                - 64.226.75.246
+                - 95.142.120.45
+                - 95.142.120.58
+                - 95.142.120.75
+                - 114.10.26.42
+                - 114.125.126.25
+                - 120.188.39.58
+                - 125.162.111.178
+                - 140.213.132.181
+                - 140.213.138.160
+                - 140.213.138.35
+                - 158.140.163.5
+                - 180.242.79.14
+                - 180.244.166.155
+                - 182.1.119.185
+                - 182.1.122.169
+                - 182.2.71.61
+                - 36.85.32.120
+                - 36.85.32.129
+                - 36.85.35.148
+                - 36.85.36.50
+                - 36.85.37.4
+                - 36.85.38.180
+                - 36.85.38.45
+                - 36.85.39.118
+                - 36.85.39.21
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
+            userAgent|contains:
+                - Boto3/1.13.14 Python/3.9.2 Linux/5.10.0-21-amd64 Botocore/1.20.0
+                - Boto3/1.24.75 Python/3.9.6 Windows/10 Botocore/1.27.75
+                - Boto3/1.24.84 Python/3.10.7 Windows/2012ServerR2 Botocore/1.27.84
+                - Boto3/1.24.84 Python/3.9.7 Windows/10 Botocore/1.27.84
+                - Boto3/1.25.0 Python/3.10.6 Linux/5.15.0-58-generic Botocore/1.28.0
+                - Boto3/1.26.22 Python/3.9.5 Windows/10 Botocore/1.29.22
+                - Boto3/1.26.40 Python/3.11.1 Windows/2012ServerR2 Botocore/1.29.40
+                - Boto3/1.26.51 Python/3.11.1 Windows/10 exec-env/EC2 Botocore/1.29.51
+                - Boto3/1.26.54 Python/3.11.1 Windows/10 exec-env/EC2 Botocore/1.29.54
+                - Boto3/1.26.60 Python/3.11.1 Windows/10 Botocore/1.29.60
+                - Boto3/1.26.64 Python/3.11.1 Windows/10 Botocore/1.29.64
+                - Boto3/1.26.69 Python/3.8.13 Linux/5.15.0-47-generic Botocore/1.29.69
+                - Boto3/1.26.71 Python/3.11.2 Windows/10 exec-env/EC2 Botocore/1.29.71
+                - Boto3/1.26.76 Python/3.11.2 Windows/10 exec-env/EC2 Botocore/1.29.76
+                - Boto3/1.26.87 Python/3.8.13 Linux/5.15.0-47-generic Botocore/1.29.87
+                - Boto3/1.26.90 Python/3.8.16 Linux/5.4.0-1097-aws Botocore/1.29.90
+                - Boto3/1.26.92 Python/3.11.2 Windows/10 exec-env/EC2 Botocore/1.29.92
+                - aws-cli/1.19.112 Python/2.7.18 Linux/4.4.0-19041-Microsoft botocore/1.20.112
+                - aws-cli/2.7.0 Python/3.9.11 Windows/10 exe/AMD64
+                - aws-cli/1.18.69 Python/3.8.10 Linux/5.4.0-137-generic botocore/1.16.19
+                - aws-cli/1.19.1 Python/3.9.2 Linux/5.10.0-21-cloud-amd64 botocore/1.20.0
+                - aws-cli/1.22.65 Python/3.8.10 Linux/4.4.0-19041-Microsoft botocore/1.27.20
+                - aws-cli/1.24.10 Python/3.6.9 Linux/4.4.0-22621-Microsoft botocore/1.26.10
+                - aws-cli/1.25.17 Python/3.9.7 Windows/10 botocore/1.27.26
+                - aws-cli/1.27.59 Python/3.8.16 Linux/5.4.0-1085-aws botocore/1.29.59
+                - aws-cli/1.27.81 Python/3.8.16 Linux/5.4.0-1085-aws botocore/1.29.81
+                - aws-cli/1.27.83 Python/3.8.16 Linux/5.4.0-1085-aws botocore/1.29.83
+                - aws-cli/2.10.1 Python/3.9.11 Linux/5.15.90.1-microsoft-standard-WSL2 exe
+                - aws-cli/2.10.1 Python/3.9.11 Linux/5.15.90.1-microsoft-standard-WSL2 exe/x86_64.ubuntu.22
+                - aws-cli/2.11.2 Python/3.11.2 Windows/10 exec-env/EC2 exe/AMD64 prompt
+                - aws-cli/2.9.19 Python/3.11.1 Linux/4.4.0-19041-Microsoft source/x86_64.kali.2022
+                - aws-cli/2.9.20 Python/3.9.11 Linux/4.4.0-19041-Microsoft exe/x86_64.ubuntu.18
+                - aws-cli/2.9.23 Python/3.9.11 Windows/10 exec-env/EC2 exe/AMD64
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    level: medium

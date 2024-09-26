@@ -1,170 +1,181 @@
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.discovery
+        - attack.t1087
+        - attack.t1087.004
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
+            eventSource: sts.amazonaws.com
+            eventName: GetCallerIdentity
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
+            userAgent|contains:
+                - 'Boto3'
+                - 'Python'
+                - 'Linux'
+                - 'Botocore'
+                - 'aws-cli'
+                - 'Scout Suite'
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 13.90.77.93
+                - 31.132.2.66
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    level: low
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.discovery
+        - attack.t1069
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
+            eventSource: organizations.amazonaws.com
+            eventName:
+                - ListOrganizationalUnitsForParent
+                - ListAccounts
+                - DescribeOrganization
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
+            userAgent|contains:
+                - 'Boto3'
+                - 'Python'
+                - 'Linux'
+                - 'Botocore'
+                - 'aws-cli'
+                - 'Scout Suite'
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 13.90.77.93
+                - 31.132.2.66
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    level: medium
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.discovery
+        - attack.t1580
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
+            eventSource: ce.amazonaws.com
+            eventName: GetCostAndUsage
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
+            userAgent|contains:
+                - 'Boto3'
+                - 'Python'
+                - 'Linux'
+                - 'Botocore'
+                - 'aws-cli'
+                - 'Scout Suite'
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 13.90.77.93
+                - 31.132.2.66
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    level: medium
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.lateral_movement
+        - attack.t1210
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
+            eventSource: rds.amazonaws.com
+            eventName:
+                - CreateDBSnapshot
+                - ModifyDBInstance
+                - CreateDBInstance
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
+            userAgent|contains:
+                - 'Boto3'
+                - 'Python'
+                - 'Linux'
+                - 'Botocore'
+                - 'aws-cli'
+                - 'Scout Suite'
+        condition: selection and selection_ioc_ua
+    level: high
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.lateral_movement
+        - attack.t1210
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
+            eventSource: ec2.amazonaws.com
+            eventName:
+                - CreateImage
+                - ImportKeyPair
+                - RunInstances
+                - ModifyInstanceAttribute
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
+            userAgent|contains:
+                - 'Boto3'
+                - 'Python'
+                - 'Linux'
+                - 'Botocore'
+                - 'aws-cli'
+                - 'Scout Suite'
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 13.90.77.93
+                - 31.132.2.66
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    level: high
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.initial_access
+        - attack.t1078
+        - attack.t1110
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
+            eventSource: signin.amazonaws.com
+            eventName: ConsoleLogin
+            userIdentity.type: Root
+            responseElements.ConsoleLogin: Failure
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
+            userAgent|contains:
+                - Boto3/1.26.45 Python/3.9.2 Linux/6.0.0-2parrot1-amd64 Botocore/1.29.45
+                - Boto3/1.7.61 Python/3.5.0 Windows/ Botocore/1.10.62
+                - aws-cli/1.19.1 Python/3.9.2 Linux/6.0.0-2parrot1-amd64 botocore/1.29.58
+                - aws-cli/1.18.69 Python/3.5.2 Linux/4.4.0-1128-aws botocore/1.16.19
+                - Scout Suite/5.12.0 Python/3.9.2 Linux/6.0.0-2parrot1-amd64 Scout Suite/5.12.0
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 13.90.77.93
+                - 31.132.2.66
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    level: high
 -   tags:
-        - attack.
-        - attack.
-        - attack.
+        - attack.t1562
+        - attack.t1562.007
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
+            eventSource: ec2.amazonaws.com
+            eventName: AuthorizeSecurityGroupIngress
+            requestParameters:
+                ipProtocol: tcp
+                fromPort: 22
+                toPort: 22
+                cidrIp: 0.0.0.0/0
         selection_ioc_ip:
-            sourceIPAddress: 
+            sourceIPAddress:
+                - 13.90.77.93
+                - 31.132.2.66
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
-    logsource:
-        product: aws
-        service: cloudtrail
-    detection:
-        selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
-    logsource:
-        product: aws
-        service: cloudtrail
-    detection:
-        selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
-    logsource:
-        product: aws
-        service: cloudtrail
-    detection:
-        selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
+            userAgent|contains:
+                - Boto3/1.26.45 Python/3.9.2 Linux/6.0.0-2parrot1-amd64 Botocore/1.29.45
+                - Boto3/1.7.61 Python/3.5.0 Windows/ Botocore/1.10.62
+                - aws-cli/1.19.1 Python/3.9.2 Linux/6.0.0-2parrot1-amd64 botocore/1.29.58
+                - aws-cli/1.18.69 Python/3.5.2 Linux/4.4.0-1128-aws botocore/1.16.19
+                - Scout Suite/5.12.0 Python/3.9.2 Linux/6.0.0-2parrot1-amd64 Scout Suite/5.12.0
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    level: high
