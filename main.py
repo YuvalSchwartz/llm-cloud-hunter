@@ -68,20 +68,20 @@ if __name__ == '__main__':
     # urls.append('https://expel.com/blog/incident-report-stolen-aws-access-keys/')
     # urls.append('https://unit42.paloaltonetworks.com/sugarcrm-cloud-incident-black-hat/')
     # urls.append('https://www.invictus-ir.com/news/ransomware-in-the-cloud/')
-
-    #####   Done but need ground truth  #####
-
     # urls.append('https://permiso.io/blog/lucr-3-scattered-spider-getting-saas-y-in-the-cloud/')
     # urls.append('https://unit42.paloaltonetworks.com/malicious-operations-of-exposed-iam-keys-cryptojacking/')
     # urls.append('https://securitylabs.datadoghq.com/articles/tales-from-the-cloud-trenches-aws-activity-to-phishing/')
+    # urls.append('https://permiso.io/blog/s/unmasking-guivil-new-cloud-threat-actor/')
     # urls.append('https://unit42.paloaltonetworks.com/shinyhunters-ransomware-extortion/')
 
+    #####   Done but need ground truth  #####
+
+
     # Need to run
-    # urls.append('https://permiso.io/blog/s/unmasking-guivil-new-cloud-threat-actor/')
 
     # not working...
     #   error: in _process_paragraph KeyError: 's'
-    # urls.append('https://securitylabs.datadoghq.com/articles/tales-from-the-cloud-trenches-raiding-for-vaults-buckets-secrets/')
+    urls.append('https://securitylabs.datadoghq.com/articles/tales-from-the-cloud-trenches-raiding-for-vaults-buckets-secrets/')
     urls.append('https://securitylabs.datadoghq.com/articles/tales-from-the-cloud-trenches-ecs-crypto-mining/')
 
 

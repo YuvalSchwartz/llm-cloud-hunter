@@ -1,0 +1,22 @@
+OSCTI Name,"API Call, Tactic","API Call, Tactic","API Call, Tactic","API Call, Tactic","API Call , Technique","API Call , Technique","API Call , Technique","API Call , Technique","API Call, Sub-technique","API Call, Sub-technique","API Call, Sub-technique","API Call, Sub-technique","Detection Field Name,Detection Entity","Detection Field Name, Detection Entity","Detection Field Name, Detection Entity","Detection Field Name, Detection Entity","API Call, API Source","API Call, API Source","API Call, API Source","API Call, API Source","API Call, Log Source","API Call, Log Source","API Call, Log Source","API Call, Log Source","API Call, IoC","API Call, IoC","API Call, IoC","API Call, IoC","API Call, Other","API Call, Other","API Call, Other","API Call, Other"
+OSCTI Name,Support,Precision,Recall,F1-score,Support,Precision,Recall,F1-score,Support,Precision,Recall,F1-score,Support,Precision,Recall,F1-score,Support,Precision,Recall,F1-score,Support,Precision,Recall,F1-score,Support,Precision,Recall,F1-score,Support,Precision,Recall,F1-score
+Anatomy of an Attack: Exposed keys to Crypto Mining,8,0.88,0.88,0.88,8,0.88,0.88,0.88,6,1,0.83,0.91,24,1,0.62,0.77,8,1,1,1,16,1,1,1,15,0.94,1,0.97,9,1,0.22,0.36
+Behind the scenes in the Expel SOC: Alert-to-fix in AWS,6,0,0,0,6,1,0.83,0.91,3,1,0.67,0.8,14,1,0.93,0.96,6,1,1,1,12,1,1,1,18,1,1,1,7,1,0.14,0.25
+Bling Libra’s Tactical Evolution: The Threat Actor Group Behind ShinyHunters Ransomware,5,0,0,0,25,0.91,0.84,0.87,6,1,0.83,0.91,29,1,0.86,0.93,12,1,1,1,36,1,1,1,54,1,1,1,2,0,0,0
+CloudKeys in the Air: Tracking Malicious Operations of Exposed IAM Keys,12,1,0.67,0.8,17,0.54,0.41,0.47,4,1,0.75,0.86,34,1,0.85,0.92,8,1,1,1,32,1,0.94,0.97,18,1,1,1,9,1,0.56,0.71
+Compromised Cloud Compute Credentials: Case Studies From the Wild (Case 1),45,0,0,0,45,0.5,0.07,0.12,2,1,1,1,56,1,0.96,0.98,72,1,0.6,0.75,90,1,1,1,45,1,1,1,4,0,0,0
+Detecting AI resource-hijacking with Composite Alerts,6,0,0,0,12,1,0.33,0.5,1,0,0,0,61,1,1,1,12,1,0.75,0.86,18,1,1,1,394,0.95,1,0.98,0,1,1,1
+Finding evil in AWS: A key pair to remember,10,0.5,0.3,0.37,10,0,0,0,0,1,1,1,15,1,0.93,0.97,14,1,0.71,0.83,16,1,1,1,14,1,0.5,0.67,0,1,1,1
+"Incident report: From CLI to console, chasing an attacker in AWS",7,1,0.71,0.83,8,0.88,0.88,0.88,6,1,0.67,0.8,22,1,0.82,0.9,8,1,1,1,16,1,1,1,13,0.52,1,0.68,4,1,0.25,0.4
+Incident report: stolen AWS access keys,3,1,1,1,4,1,1,1,2,1,1,1,12,0.92,1,0.96,4,1,1,1,8,1,1,1,12,0.8,1,0.89,0,1,1,1
+LUCR-3: Scattered Spider Getting SaaS-y in the Cloud,7,0,0,0,14,1,1,1,12,0.75,0.75,0.75,26,1,0.92,0.96,14,1,1,1,28,1,1,1,23,1,0.96,0.98,1,0,0,0
+Ransomware in the cloud,12,1,0.17,0.29,12,0.9,0.75,0.82,6,1,0.83,0.91,91,1,1,1,13,0.92,0.92,0.92,26,1,1,1,804,0.99,1,0.99,5,1,1,1
+"SCARLETEEL: Operation leveraging Terraform, Kubernetes, and AWS for data theft",5,0.67,0.4,0.5,9,0.78,0.78,0.78,6,1,0.83,0.91,6,1,0.83,0.91,2,1,1,1,26,1,0.96,0.98,4,1,1,1,1,0,0,0
+Tales from the cloud trenches: Amazon ECS is the new EC2 for crypto mining,1,1,1,1,16,0.87,0.81,0.84,7,1,0.86,0.92,29,1,1,1,16,1,1,1,32,1,1,1,0,1,1,1,4,1,1,1
+"Tales from the cloud trenches: Raiding for AWS vaults, buckets and secrets",0,1,1,1,9,1,0.89,0.94,1,1,1,1,21,1,1,1,13,1,0.62,0.76,10,1,1,1,37,0.82,1,0.9,0,1,1,1
+Tales from the cloud trenches: Using AWS CloudTrail to identify malicious activity and spot phishing campaign,4,1,0.25,0.4,5,0.67,0.4,0.5,2,0,0,0,11,1,0.91,0.95,4,1,1,1,8,1,1,1,6,1,1,1,2,0,0,0
+The curious case of DangerDev@protonmail.me,25,1,0.08,0.15,27,0.62,0.48,0.54,9,0.83,0.56,0.67,48,1,0.92,0.96,21,1,1,1,42,1,1,1,168,1,1,1,13,1,0.69,0.82
+Two real-life examples of why limiting permissions works: Lessons from AWS CIRT (Case 1),11,0,0,0,10,0.25,0.1,0.14,0,1,1,1,13,1,0.92,0.96,8,1,1,1,16,1,1,1,0,1,1,1,16,1,0.38,0.55
+Two real-life examples of why limiting permissions works: Lessons from AWS CIRT (Case 2),4,0,0,0,6,1,0.5,0.67,0,1,1,1,10,1,0.7,0.82,3,1,1,1,6,1,1,1,0,1,1,1,7,1,0.29,0.44
+Unmasking GUI-Vil: Financially Motivated Cloud Threat Actor,10,1,0.2,0.33,13,0.71,0.38,0.5,11,1,0.27,0.43,28,1,1,1,9,1,1,1,18,1,1,1,90,1,1,1,3,1,1,1
+When a Zero Day and Access Keys Collide in the Cloud: Responding to the SugarCRM Zero-Day Vulnerability,13,0,0,0,8,0.5,0.5,0.5,2,1,1,1,39,1,0.97,0.99,14,1,0.93,0.96,28,1,0.93,0.96,104,0.77,0.92,0.84,4,1,1,1

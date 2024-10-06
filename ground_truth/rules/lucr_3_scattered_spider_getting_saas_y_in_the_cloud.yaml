@@ -1,170 +1,165 @@
--   tags:
-        - attack.
-        - attack.
-        - attack.
+-   title: AWS Systems Manager Gather Software Inventory
+    tags:
+        - attack.t1518
+        - attack.t1518.001
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
+            eventSource: ssm.amazonaws.com
+            eventName: AWS-GatherSoftwareInventory
+            requestParameters.DocumentName: AWS-GatherSoftwareInventory
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
+            userAgent|contains:
+                - S3 Browser 10.9.9
+                - aws-sdk-go/
+        condition: selection and selection_ioc_ua
+    level: low
+
+-   title: AWS IAM Instance Profile Association Replacement
+    tags:
+        - attack.t1098
+        - attack.t1098.003
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
+            eventSource: ec2.amazonaws.com
+            eventName: ReplaceIamInstanceProfileAssociation
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
+            userAgent|contains:
+                - S3 Browser 10.9.9
+                - aws-sdk-go/
+        condition: selection and selection_ioc_ua
+    level: high
+
+-   title: AWS IAM Login Profile Update
+    tags:
+        - attack.persistence
+        - attack.t1098
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
+            eventSource: iam.amazonaws.com
+            eventName:
+                - UpdateLoginProfile
+                - CreateLoginProfile
+        condition: selection
+    level: high
+
+-   title: AWS Secrets Manager Get Secret Value from CloudShell
+    tags:
+        - attack.t1555
+        - attack.t1555.006
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
+            eventSource: secretsmanager.amazonaws.com
+            eventName: GetSecretValue
+            userAgent: cloudshell.amazonaws.com
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
+            userAgent|contains:
+                - S3 Browser 10.9.9
+                - aws-sdk-go/
+        condition: selection and selection_ioc_ua
+    level: high
+
+-   title: AWS IAM User Creation
+    tags:
+        - attack.persistence
+        - attack.t1136.003
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
+            eventSource: iam.amazonaws.com
+            eventName: CreateUser
+        condition: selection
+    level: high
+
+-   title: AWS IAM Access Key Creation
+    tags:
+        - attack.persistence
+        - attack.t1098
+        - attack.t1098.001
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
+            eventSource: iam.amazonaws.com
+            eventName: CreateAccessKey
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
+            userAgent|contains:
+                - S3 Browser 10.9.9
+                - aws-sdk-go/
+        condition: selection and selection_ioc_ua
+    level: high
+
+-   title: AWS GuardDuty Detector Deletion
+    tags:
+        - attack.defense_evasion
+        - attack.t1562.001
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
+            eventSource: guardduty.amazonaws.com
+            eventName:
+                - DisassociateFromMasterAccount
+                - DeleteInvitations
+                - DeleteDetector
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
+            userAgent|contains:
+                - S3 Browser 10.9.9
+                - aws-sdk-go/
+        condition: selection and selection_ioc_ua
+    level: high
+
+-   title: AWS CloudTrail Logging Stopped or Trail Deleted
+    tags:
+        - attack.t1562
+        - attack.t1562.008
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
+            eventSource: cloudtrail.amazonaws.com
+            eventName:
+                - StopLogging
+                - DeleteTrail
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
+            userAgent|contains:
+                - S3 Browser 10.9.9
+                - aws-sdk-go/
+        condition: (selection1 or selection2) and selection_ioc_ua
+    level: high
+
+-   title: AWS EC2 Serial Console Access Enabled
+    tags:
+        - attack.t1550
+        - attack.t1550.001
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
+            eventSource: ec2.amazonaws.com
+            eventName:
+                - EnableSerialConsoleAccess
+                - SendSerialConsoleSSHPublicKey
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
-    logsource:
-        product: aws
-        service: cloudtrail
-    detection:
-        selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
+            userAgent|contains:
+                - S3 Browser 10.9.9
+                - aws-sdk-go/
+        condition: selection and selection_ioc_ua
+    level: medium

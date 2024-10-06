@@ -1,3 +1,4 @@
+import json
 import logging
 import re
 from collections import Counter
@@ -90,32 +91,56 @@ class OSCTILevelProcessor:
 
         ioc = self.ioc_extractor.extract_iocs(markdown)
         if ioc.ip_addresses or ioc.user_agents:
-            for rule in rules:
-                if ioc.ip_addresses:
-                    rule['detection']["selection_ioc_ip"] = {"sourceIPAddress": deepcopy(ioc.ip_addresses)}
-                if ioc.user_agents:
-                    rule['detection']["selection_ioc_ua"] = {"userAgent|contains": deepcopy(ioc.user_agents)}
+            for index, rule in enumerate(rules):
+                try:
+                    if ioc.ip_addresses:
+                        rule['detection']["selection_ioc_ip"] = {"sourceIPAddress": deepcopy(ioc.ip_addresses)}
+                    if ioc.user_agents:
+                        rule['detection']["selection_ioc_ua"] = {"userAgent|contains": deepcopy(ioc.user_agents)}
 
-                # if 'condition' in rule['detection']:
-                #     condition = rule['detection']['condition']
-                #     condition = f"({condition})" if bool(re.search(r'^(\w+)(?: or \w+)+$', condition)) else condition
-                #     del rule['detection']['condition']
-                #     if ioc.ip_addresses and ioc.user_agents:
-                #         rule['detection']['condition'] = f"{condition} and (selection_ioc_ip or selection_ioc_ua)"
-                #     elif ioc.ip_addresses and not ioc.user_agents:
-                #         rule['detection']['condition'] = f"{condition} and selection_ioc_ip"
-                #     elif not ioc.ip_addresses and ioc.user_agents:
-                #         rule['detection']['condition'] = f"{condition} and selection_ioc_ua"
+                    if 'detection' not in rule:
+                        raise KeyError("'detection' key not found in rule")
+                    if 'condition' not in rule['detection']:
+                        raise KeyError("'condition' key not found in rule['detection']")
 
-                condition = rule['detection']['condition']
-                condition = f"({condition})" if bool(re.search(r'^(\w+)(?: or \w+)+$', condition)) else condition
-                del rule['detection']['condition']
-                if ioc.ip_addresses and ioc.user_agents:
-                    rule['detection']['condition'] = f"{condition} and (selection_ioc_ip or selection_ioc_ua)"
-                elif ioc.ip_addresses and not ioc.user_agents:
-                    rule['detection']['condition'] = f"{condition} and selection_ioc_ip"
-                elif not ioc.ip_addresses and ioc.user_agents:
-                    rule['detection']['condition'] = f"{condition} and selection_ioc_ua"
+                    condition = rule['detection']['condition']
+                    condition = f"({condition})" if bool(re.search(r'^(\w+)(?: or \w+)+$', condition)) else condition
+                    del rule['detection']['condition']
+
+                    if ioc.ip_addresses and ioc.user_agents:
+                        rule['detection']['condition'] = f"{condition} and (selection_ioc_ip or selection_ioc_ua)"
+                    elif ioc.ip_addresses and not ioc.user_agents:
+                        rule['detection']['condition'] = f"{condition} and selection_ioc_ip"
+                    elif not ioc.ip_addresses and ioc.user_agents:
+                        rule['detection']['condition'] = f"{condition} and selection_ioc_ua"
+
+                except KeyError as e:
+                    logging.error(f"KeyError in rule {index}: {str(e)}")
+                    logging.error(f"Problematic rule: {json.dumps(rule, indent=2)}")
+                    logging.error(f"IP addresses: {ioc.ip_addresses}")
+                    logging.error(f"User agents: {ioc.user_agents}")
+                    # Optionally, you can try to fix the rule here or skip it
+                    continue  # Skip this rule and continue with the next one
+                except Exception as e:
+                    logging.error(f"Unexpected error in rule {index}: {str(e)}")
+                    logging.error(f"Problematic rule: {json.dumps(rule, indent=2)}")
+                    continue  # Skip this rule and continue with the next one
+        # ioc = self.ioc_extractor.extract_iocs(markdown)
+        # if ioc.ip_addresses or ioc.user_agents:
+        #     for rule in rules:
+        #         if ioc.ip_addresses:
+        #             rule['detection']["selection_ioc_ip"] = {"sourceIPAddress": deepcopy(ioc.ip_addresses)}
+        #         if ioc.user_agents:
+        #             rule['detection']["selection_ioc_ua"] = {"userAgent|contains": deepcopy(ioc.user_agents)}
+        #         condition = rule['detection']['condition']
+        #         condition = f"({condition})" if bool(re.search(r'^(\w+)(?: or \w+)+$', condition)) else condition
+        #         del rule['detection']['condition']
+        #         if ioc.ip_addresses and ioc.user_agents:
+        #             rule['detection']['condition'] = f"{condition} and (selection_ioc_ip or selection_ioc_ua)"
+        #         elif ioc.ip_addresses and not ioc.user_agents:
+        #             rule['detection']['condition'] = f"{condition} and selection_ioc_ip"
+        #         elif not ioc.ip_addresses and ioc.user_agents:
+        #             rule['detection']['condition'] = f"{condition} and selection_ioc_ua"
 
         if len(rules) == 1:
             rules = rules[0]

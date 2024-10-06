@@ -1,170 +1,222 @@
--   tags:
-        - attack.
-        - attack.
-        - attack.
+-   title: AWS STS Account Discovery - GetCallerIdentity
+    tags:
+        - attack.t1087
+        - attack.t1087.004
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
+            eventSource: sts.amazonaws.com
+            eventName: GetCallerIdentity
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
+            userAgent|contains:
+                - AWSPowerShell.Common/4.1.90.0 .NET_Core/6.0.5 OS/Microsoft_Windows_10.0.17763 PowerShellCore/7.-1 ClientAsync
+                - python-requests/2.31.0
+        condition: selection and selection_ioc_ua
+    level: medium
+-   title: AWS IAM Policy Modification - AttachUserPolicy
+    tags:
+        - attack.t1484
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
+            eventSource: iam.amazonaws.com
+            eventName: AttachUserPolicy
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
+            userAgent|contains:
+                - AWSPowerShell.Common/4.1.90.0 .NET_Core/6.0.5 OS/Microsoft_Windows_10.0.17763 PowerShellCore/7.-1 ClientAsync
+                - python-requests/2.31.0
+        condition: selection and selection_ioc_ua
+    level: high
+-   title: AWS Account Attributes Reconnaissance
+    tags:
+        - attack.t1580
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
+            eventName:
+                - DescribeAccountAttributes
+                - DescribeInstanceTypeOfferings
+                - DescribeInstanceTypes
+                - DescribeInstances
+                - DescribeRegions
+        condition: selection
+    level: low
+-   title: AWS Cloud Infrastructure Discovery - EC2 API Calls
+    tags:
+        - attack.discovery
+        - attack.t1580
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
+            eventSource: ec2.amazonaws.com
+            eventName:
+                - DescribeSecurityGroups
+                - DescribeVpcs
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
+            userAgent|contains:
+                - AWSPowerShell.Common/4.1.90.0 .NET_Core/6.0.5 OS/Microsoft_Windows_10.0.17763 PowerShellCore/7.-1 ClientAsync
+                - python-requests/2.31.0
+        condition: selection and selection_ioc_ua
+    level: medium
+-   title: AWS Security Group Creation or Modification
+    tags:
+        - attack.persistence
+        - attack.t1098
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
-        selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
+            eventName:
+                - CreateSecurityGroup
+                - AuthorizeSecurityGroupIngress
+        condition: selection
+    level: high
+-   title: AWS Service Quota Discovery
+    tags:
+        - attack.discovery
+        - attack.t1580
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
+            eventSource: servicequotas.amazonaws.com
+            eventName: GetServiceQuota
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
+            userAgent|contains:
+                - AWSPowerShell.Common/4.1.90.0 .NET_Core/6.0.5 OS/Microsoft_Windows_10.0.17763 PowerShellCore/7.-1 ClientAsync
+                - python-requests/2.31.0
+        condition: selection and selection_ioc_ua
+    level: low
+
+-   title: AWS Service Quota Discovery
+    tags:
+        - attack.discovery
+        - attack.t1580
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
+            eventSource: servicequotas.amazonaws.com
+            eventName: GetServiceQuota
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
+            userAgent|contains:
+                - AWSPowerShell.Common/4.1.90.0 .NET_Core/6.0.5 OS/Microsoft_Windows_10.0.17763 PowerShellCore/7.-1 ClientAsync
+                - python-requests/2.31.0
+        condition: selection and selection_ioc_ua
+    level: low
+-   title: AWS EC2 Instance Creation with User Data
+    tags:
+        - attack.execution
+        - attack.t1059
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
+            eventName: RunInstances
+            requestParameters.instanceType:
+                - c5a.24xlarge
+                - c5a.2xlarge
+                - c5a.4xlarge
+                - c5a.xlarge
+                - c6i.32xlarge
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
+            userAgent|contains:
+                - AWSPowerShell.Common/4.1.90.0 .NET_Core/6.0.5 OS/Microsoft_Windows_10.0.17763 PowerShellCore/7.-1 ClientAsync
+                - python-requests/2.31.0
+        condition: selection and selection_ioc_ua
+    level: high
+
+-   title: AWS EC2 Instance Creation with Suspicious AMI
+    tags:
+        - attack.persistence
+        - attack.t1525
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
+            eventName: RunInstances
+            requestParameters.imageId:
+                - ami-00310984e6af61 f28
+                - ami -ooe30845ca59e12cf
+                - ami -02ed0911252de60fe
+                - ami -043279dbc7bf6f94c
+                - ami-064bd2d44a1d6c097
+                - ami-072127c5870587fd4
+                - ami-077863d8f382a8e14
+                - ami-079f7ad91254393f7
+                - ami-07ab28814c1373647
+                - ami-093623d220739a9ea
+                - ami-oa000743ba7b9d393
+                - ami -Oe0f4de9d283 f ceeb
+                - ami-oe5459d6634433921
+                - ami -oeac055f98c90044d
+                - ami-0f32dbc35294b8cd5
+                - ami -0f96f6abc3e8172ba
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
--   tags:
-        - attack.
-        - attack.
-        - attack.
+            userAgent|contains:
+                - AWSPowerShell.Common/4.1.90.0 .NET_Core/6.0.5 OS/Microsoft_Windows_10.0.17763 PowerShellCore/7.-1 ClientAsync
+                - python-requests/2.31.0
+        condition: selection and selection_ioc_ua
+    level: high
+
+-   title: Multiple EC2 Instances Created Across Regions
+    tags:
+        - attack.resource_development
+        - attack.t1583.006
     logsource:
         product: aws
         service: cloudtrail
     detection:
         selection:
-            eventSource: 
-            eventName: 
-        selection_ioc_ip:
-            sourceIPAddress: 
+            eventName: RunInstances
+        condition: selection | count() by userIdentity.principalId > 5 and selection | count(distinct=awsRegion) > 3
+    level: high
+-   title: AWS Organization Account Creation
+    tags:
+        - attack.t1136
+        - attack.t1136.003
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: organizations.amazonaws.com
+            eventName: CreateAccount
         selection_ioc_ua:
-            userAgent|contains: 
-        condition: 
-    level: 
+            userAgent|contains:
+                - AWSPowerShell.Common/4.1.90.0 .NET_Core/6.0.5 OS/Microsoft_Windows_10.0.17763 PowerShellCore/7.-1 ClientAsync
+                - python-requests/2.31.0
+        condition: selection and selection_ioc_ua
+    level: high
+-   title: AWS IAM User Creation
+    tags:
+        - attack.t1136
+        - attack.t1136.003
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: iam.amazonaws.com
+            eventName:
+            - CreateUser
+            - PutUserPolicy
+        selection_ioc_ua:
+            userAgent|contains:
+                - AWSPowerShell.Common/4.1.90.0 .NET_Core/6.0.5 OS/Microsoft_Windows_10.0.17763 PowerShellCore/7.-1 ClientAsync
+                - python-requests/2.31.0
+        condition: selection and selection_ioc_ua
+    level: high

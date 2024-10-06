@@ -84,6 +84,10 @@ class TTPClassifier:
     def _validate_event_to_ttps(event_to_ttps: dict[str, dict[str, str]]) -> dict[str, dict[str, str]]:
         reformatted_event_to_ttps = {}
         for event, ttps in event_to_ttps.items():
+            # TODO: check and improve the validation, for now, the following line is a temporary solution
+            if len(event) < 3 or ttps is None or event == 'S' or event == 's':
+                logging.warning(f"Invalid event: {event} or TTPs: {ttps}")
+                continue
             event = validate_event(event)
             reformatted_event_to_ttps[event] = {}
             for type, value in ttps.items():

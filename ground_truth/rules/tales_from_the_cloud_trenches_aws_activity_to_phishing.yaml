@@ -1,0 +1,100 @@
+-   title: AWS SNS GetSMSAttributes Enumeration
+    tags:
+        - attack.t1580
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: sns.amazonaws.com
+            eventName: GetSMSAttributes
+        sourceIPAddress:
+            - 134.209.127.249
+            - 64.23.212.130
+        condition: selection and selection_ioc_ip
+    level: medium
+
+-   title: AWS SNS GetSMSSandboxAccountStatus Enumeration
+    tags:
+        - attack.discovery
+        - attack.t1526
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: sns.amazonaws.com
+            eventName: GetSMSSandboxAccountStatus
+        sourceIPAddress:
+                - 134.209.127.249
+                - 64.23.212.130
+        condition: selection and selection_ioc_ip
+    level: low
+
+-   title: AWS STS GetCallerIdentity for Credential Validation
+    tags:
+        - attack.discovery
+        - attack.t1087.004
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: sts.amazonaws.com
+            eventName: GetCallerIdentity
+        condition: selection
+    level: low
+
+-   title: AWS SNS Publish SMS Message
+    tags:
+        - attack.initial_access
+        - attack.t1566.004
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: sns.amazonaws.com
+            eventName: Publish
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 134.209.127.249
+                - 64.23.212.130
+        condition: selection and selection_ioc_ip
+    level: high
+
+-   title: AWS SNS Multi-Region Enumeration
+    tags:
+        - attack.discovery
+        - attack.t1526
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: sns.amazonaws.com
+            eventName:
+                - GetSMSAttributes
+                - GetSMSSandboxAccountStatus
+        condition: selection | count(distinct=awsRegion) >= 5
+    level: high
+-   title: AWS SNS Enumeration with Long-Term Access Key
+    tags:
+        - attack.discovery
+        - attack.t1526
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: sns.amazonaws.com
+            eventName:
+                - GetSMSAttributes
+                - GetSMSSandboxAccountStatus
+            userIdentity.accessKeyId: AKIA*
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 134.209.127.249
+                - 64.23.212.130
+        condition: selection and selection_ioc_ip
+    level: high

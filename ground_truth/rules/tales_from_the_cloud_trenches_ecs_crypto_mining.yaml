@@ -1,0 +1,150 @@
+-   tags:
+        - attack.t1526
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: ses.amazonaws.com
+            eventName:
+                - GetSendQuota
+                - ListIdentities
+        condition: selection
+    level: low
+-   tags:
+        - attack.t1087
+        - attack.t1087.004
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: iam.amazonaws.com
+            eventName: ListUsers
+        condition: selection
+    level: low
+-   tags:
+        - attack.t1136
+        - attack.t1136.003
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: iam.amazonaws.com
+            eventName: CreateUser
+        condition: selection
+    level: high
+-   tags:
+        - attack.t1098
+        - attack.t1098.003
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: iam.amazonaws.com
+            eventName:
+                - AttachUserPolicy
+                - CreateLoginProfile
+        condition: selection or
+    level: high
+-   tags:
+        - attack.t1580
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: resource-explorer-2.amazonaws.com
+            eventName: Search
+            requestParameters.query-string|contains: ecs:cluster
+        condition: selection
+    level: low
+-   tags:
+        - attack.t1021
+        - attack.t1021.007
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: ec2-instance-connect.amazonaws.com
+            eventName: SendSSHPublicKey
+        condition: selection
+    level: high
+-   tags:
+        - attack.t1530
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        list_buckets_selection:
+            eventSource: s3.amazonaws.com
+            eventName:
+                - ListBuckets
+                - HeadObject
+                - GetObject
+        condition: list_buckets_selection
+    falsepositives:
+        - Routine bucket or object listing by legitimate users or automated processes.
+    level: low
+-   tags:
+        - attack.credential_access
+        - attack.t1555
+        - attack.t1555.006
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: kms.amazonaws.com
+            eventName: Decrypt
+        condition: selection
+    level: high
+-   tags:
+        - attack.t1550
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: ec2.amazonaws.com
+            eventName:
+                - ImportKeyPair
+                - CreateSecurityGroup
+        condition: selection
+    level: high
+-   tags:
+        - attack.t1578
+        - attack.t1578.005
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: ec2.amazonaws.com
+            eventName: AuthorizeSecurityGroupIngress
+            requestParameters:
+                ipProtocol: tcp
+                fromPort: 22
+                toPort: 22
+                cidrIp: 0.0.0.0/0
+        condition: selection
+    falsepositives:
+        - Legitimate security group changes for temporary access by administrators.
+    level: high
+-   tags:
+        - attack.t1496
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: ec2.amazonaws.com
+            eventName: RunInstances
+            requestParameters.instanceType: r6i.metal
+        condition: selection
+    falsepositives:
+        - Legitimate instance launches by authorized users for high-performance computing tasks.
+    level: high

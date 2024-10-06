@@ -1,0 +1,213 @@
+-   title: AWS IAM User Enumeration Attempt
+    tags:
+        - attack.discovery
+        - attack.t1087.004
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventName: ListUsers
+        selection_ioc_ua:
+            userAgent|contains:
+                - S3 Browser/
+                - WinSCP/
+                - aws-cli/
+        condition: selection and selection_ioc_ua
+    level: medium
+
+-   title: AWS S3 Bucket Enumeration
+    tags:
+        - attack.t1580
+        - attack.t1619
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventName:
+            - ListBuckets
+            - ListObjects
+            - HeadObject
+        selection_ioc_ua:
+            userAgent|contains:
+                - S3 Browser/
+                - WinSCP/
+                - aws-cli/
+        condition: selection and selection_ioc_ua
+    level: low
+
+-   title: AWS S3 Buckext Location and Lock Configuration Check
+    tags:
+        - attack.discovery
+        - attack.t1082
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        get_bucket_location_selection:
+            eventSource: s3.amazonaws.com
+            eventName: GetBucketLocation
+        get_bucket_object_lock_selection:
+            eventSource: s3.amazonaws.com
+            eventName: GetBucketObjectLockConfiguration
+        selection_ioc_ua:
+            userAgent|contains:
+                - S3 Browser/
+                - WinSCP/
+                - aws-cli/
+        condition: (get_bucket_location_selection or get_bucket_object_lock_selection) and selection_ioc_ua
+    level: low
+
+-   title: AWS S3 Bucket Deletion
+    tags:
+        - attack.impact
+        - attack.t1485
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventName: DeleteBucket
+        selection_ioc_ua:
+            userAgent|contains:
+                - S3 Browser/
+                - WinSCP/
+                - aws-cli/
+        condition: selection and selection_ioc_ua
+    level: high
+
+-   title: AWS S3 Bucket Creation with Suspicious Names
+    tags:
+        - attack.impact
+        - attack.t1485
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventName: CreateBucket
+            requestParameters.bucketName|startswith: 'contact-shinycorp-tutanota-com-'
+        selection_ioc_ua:
+            userAgent|contains:
+                - S3 Browser/
+                - WinSCP/
+                - aws-cli/
+        condition: selection and selection_ioc_ua
+    level: high
+
+-   title: Multiple S3 Bucket Creations in Short Time
+    tags:
+        - attack.impact
+        - attack.t1485
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventName: CreateBucket
+        timeframe: 10m
+        condition: selection | count() > 5
+    level: high
+
+-   title: S3 Browser Tool Usage
+    tags:
+        - attack.discovery
+        - attack.t1087.004
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            userAgent|startswith: 'S3 Browser/'
+        condition: selection
+    level: medium
+
+-   title: WinSCP Tool Usage for S3 Access
+    tags:
+        - attack.discovery
+        - attack.t1087.004
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            userAgent|startswith: 'WinSCP/'
+        condition: selection
+    level: medium
+-   tags:
+        - attack.t1580
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: cloudfront.amazonaws.com
+            eventName: ListDistributions
+        selection_ioc_ua:
+            userAgent|contains:
+                - S3 Browser/
+                - WinSCP/
+                - aws-cli/
+        condition: selection and selection_ioc_ua
+    level: low
+-   tags:
+      - attack.t1069
+      - attack.t1069.003
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+      selection:
+          eventSource: s3.amazonaws.com
+          eventName:
+              - GetBucketAcl
+              - GetBucketOwnershipControls
+              - GetBucketPublicAccessBlock
+      selection_ioc_ua:
+          userAgent|contains:
+              - S3 Browser/
+              - WinSCP/
+              - aws-cli/
+      condition: selection and selection_ioc_ua
+    level: low
+-   tags:
+        - attack.t1580
+        - attack.t1654
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: s3.amazonaws.com
+            eventName:
+                - GetBucketLogging
+                - GetBucketReplication
+                - GetAccelerateConfiguration
+                - GetBucketRequestPayment
+        selection_ioc_ua:
+            userAgent|contains:
+                - S3 Browser/
+                - WinSCP/
+                - aws-cli/
+        condition: selection and selection_ioc_ua
+    level: low
+-   tags:
+      - attack.t1484
+      - attack.t1484.002
+    logsource:
+      product: aws
+      service: cloudtrail
+    detection:
+      selection:
+          eventSource: s3.amazonaws.com
+          eventName:
+            -   DeleteBucketPublicAccessBlock
+            -   PutBucketAcl
+      selection_ioc_ua:
+          userAgent|contains:
+              - S3 Browser/
+              - WinSCP/
+              - aws-cli/
+      condition: selection and selection_ioc_ua
+    level: high
