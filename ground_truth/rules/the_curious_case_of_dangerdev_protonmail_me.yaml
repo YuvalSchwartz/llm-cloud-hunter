@@ -1,4 +1,5 @@
--   tags:
+-   title:
+    tags:
         - attack.discovery
         - attack.t1526
     logsource:
@@ -23,7 +24,8 @@
             userAgent|contains: aws-sdk-go-v2/1.21.2
         condition: selection and (selection_ioc_ip or selection_ioc_ua)
     level: low
--   tags:
+-   title:
+    tags:
         - attack.discovery
         - attack.t1087
         - attack.t1087.004
@@ -34,10 +36,10 @@
         selection:
             eventSource: iam.amazonaws.com
             eventName:
-            - ListUsers
-            - ListGroupsForUser
-            - ListInstanceProfiles
-            - ListSSHPublicKeys
+                - ListUsers
+                - ListGroupsForUser
+                - ListInstanceProfiles
+                - ListSSHPublicKeys
         selection_ioc_ip:
             sourceIPAddress:
                 - 107.151.188.91
@@ -51,7 +53,8 @@
             userAgent|contains: aws-sdk-go-v2/1.21.2
         condition: selection and (selection_ioc_ip or selection_ioc_ua)
     level: medium
--   tags:
+-   title:
+    tags:
         - attack.t1069
         - attack.t1069.003
     logsource:
@@ -81,7 +84,8 @@
             userAgent|contains: aws-sdk-go-v2/1.21.2
         condition: selection and (selection_ioc_ip or selection_ioc_ua)
     level: high
--   tags:
+-   title:
+    tags:
         - attack.persistence
         - attack.t1136
         - attack.t1136.003
@@ -108,7 +112,8 @@
             userAgent|contains: aws-sdk-go-v2/1.21.2
         condition: selection and (selection_ioc_ip or selection_ioc_ua)
     level: high
--   tags:
+-   title:
+    tags:
         - attack.t1619
     logsource:
         product: aws
@@ -130,7 +135,8 @@
             userAgent|contains: aws-sdk-go-v2/1.21.2
         condition: selection and (selection_ioc_ip or selection_ioc_ua)
     level: low
--   tags:
+-   title:
+    tags:
         - attack.privilege_escalation
         - attack.t1098
         - attack.t1098.003
@@ -141,8 +147,8 @@
         selection:
             eventSource: iam.amazonaws.com
             eventName:
-            - AttachUserPolicy
-            - UpdateLoginProfile
+                - AttachUserPolicy
+                - UpdateLoginProfile
             requestParameters.policyArn|endswith: '/AdministratorAccess'
         selection_ioc_ip:
             sourceIPAddress:
@@ -157,7 +163,8 @@
             userAgent|contains: aws-sdk-go-v2/1.21.2
         condition: selection and (selection_ioc_ip or selection_ioc_ua)
     level: high
--   tags:
+-   title:
+    tags:
         - attack.impact
         - attack.t1496
     logsource:
@@ -184,7 +191,8 @@
             userAgent|contains: aws-sdk-go-v2/1.21.2
         condition: selection and (selection_ioc_ip or selection_ioc_ua)
     level: high
--   tags:
+-   title:
+    tags:
         - attack.defense_evasion
         - attack.t1070
         - attack.impact
@@ -212,7 +220,8 @@
             userAgent|contains: aws-sdk-go-v2/1.21.2
         condition: selection and (selection_ioc_ip or selection_ioc_ua)
     level: high
--   tags:
+-   title:
+    tags:
         - attack.defense_evasion
         - attack.t1070
     logsource:
@@ -237,7 +246,8 @@
             userAgent|contains: aws-sdk-go-v2/1.21.2
         condition: selection and (selection_ioc_ip or selection_ioc_ua)
     level: high
--   tags:
+-   title:
+    tags:
         - attack.defense_evasion
         - attack.t1562
         - attack.discovery
@@ -251,6 +261,7 @@
             eventName:
                 - ListFindings
                 - GetFindings
+            requestParameters.findingCriteria.criterion.resource.resourceType: RDSDBInstance
         selection_ioc_ip:
             sourceIPAddress:
                 - 107.151.188.91
@@ -264,7 +275,8 @@
             userAgent|contains: aws-sdk-go-v2/1.21.2
         condition: selection and (selection_ioc_ip or selection_ioc_ua)
     level: medium
--   tags:
+-   title:
+    tags:
         - attack.defense_evasion
         - attack.t1578
         - attack.persistence
@@ -289,3 +301,229 @@
             userAgent|contains: aws-sdk-go-v2/1.21.2
         condition: selection and (selection_ioc_ip or selection_ioc_ua)
     level: high
+-   title: AWS EC2 Security Group Creation
+    tags:
+        - attack.t1562
+        - attack.t1562.007
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: ec2.amazonaws.com
+            eventName: AuthorizeSecurityGroupIngress
+            requestParameters.fromPort: 22
+            requestParameters.toPort: 22
+            requestParameters.ipRanges.items[].cidrIp: 0.0.0.0/0
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 107.151.188.91
+                - 112.215.253.179
+                - 114.122.132.171
+                - 140.213.98.125
+                - 140.213.103.106
+                - 140.213.103.218
+                - 84.32.188.147
+        selection_ioc_ua:
+            userAgent|contains: aws-sdk-go-v2/1.21.2
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    level: high
+-   title: AWS EC2 Security Group Creation
+    tags:
+        - attack.t1578
+        - attack.t1578.005
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: ec2.amazonaws.com
+            eventName:
+                - CreateSecurityGroup
+                - CreateKeyPair
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 107.151.188.91
+                - 112.215.253.179
+                - 114.122.132.171
+                - 140.213.98.125
+                - 140.213.103.106
+                - 140.213.103.218
+                - 84.32.188.147
+        selection_ioc_ua:
+            userAgent|contains: aws-sdk-go-v2/1.21.2
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    level: medium
+-   title: AWS GuardDuty Detector Discovery
+    status: experimental
+    description: Detects the use of GuardDuty API calls for discovering detectors such as ListDetectors and GetDetector, which may indicate reconnaissance activity.
+    references:
+        - https://www.invictus-ir.com/news/the-curious-case-of-dangerdev-protonmail-me/
+    author: LLMCloudHunter
+    date: 2024/09/22
+    tags:
+        - attack.discovery
+        - attack.t1526
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: guardduty.amazonaws.com
+            eventName:
+                - ListDetectors
+                - GetDetector
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 107.151.188.91
+                - 112.215.253.179
+                - 114.122.132.171
+                - 140.213.98.125
+                - 140.213.103.106
+                - 140.213.103.218
+                - 84.32.188.147
+        selection_ioc_ua:
+            userAgent|contains: aws-sdk-go-v2/1.21.2
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    falsepositives:
+        - Legitimate security monitoring activity using GuardDuty.
+    level: low
+-   title:
+    tags:
+        - attack.t1491
+        - attack.t1491.002
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: route53.amazonaws.com
+            eventName: RegisterDomain
+            requestParameters.domainNameInfo.domainName:
+                - 3d1ntl-paypal.com
+                - 3d1ntlverify.com
+                - 3d1ntlpaypalcard.com
+                - paypal-lntl.com
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 107.151.188.91
+                - 112.215.253.179
+                - 114.122.132.171
+                - 140.213.98.125
+                - 140.213.103.106
+                - 140.213.103.218
+                - 84.32.188.147
+        selection_ioc_ua:
+            userAgent|contains: aws-sdk-go-v2/1.21.2
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    falsepositives:
+        - Legitimate domain registrations that may resemble common service names but are authorized by the registrant.
+    level: high
+-   title: AWS SES Email Identities Creation - Potential Phishing Activity
+    status: experimental
+    description: Detection of AWS SES email identities being created, which could indicate phishing or spam activities as highlighted in the case involving a threat actor using SES to send phishing emails targeting cryptocurrency users and general spam.
+    references:
+        - https://www.invictus-ir.com/news/the-curious-case-of-dangerdev-protonmail-me/
+    author: LLMCloudHunter
+    date: 2024/09/22
+    tags:
+        - attack.execution
+        - attack.t1651
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: ses.amazonaws.com
+            eventName: CreateEmailIdentity
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 107.151.188.91
+                - 112.215.253.179
+                - 114.122.132.171
+                - 140.213.98.125
+                - 140.213.103.106
+                - 140.213.103.218
+                - 84.32.188.147
+        selection_ioc_ua:
+            userAgent|contains: aws-sdk-go-v2/1.21.2
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    falsepositives:
+        - Legitimate business operations involving the creation of email identities for authorized marketing campaigns or transactional emails
+    level: medium
+-   title: AWS Resource and Configuration Discovery
+    tags:
+        - attack.discovery
+        - attack.t1526
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource:
+                - ec2.amazonaws.com
+            eventName:
+                - DescribeImages
+                - DescribeVpcs
+                - DescribeTags
+                - DescribeSubnets
+                - DescribeNetworkInterfaces
+                - DescribeKeyPairs
+                - DescribeAccountAttributes
+                - DescribeAddresses
+                - DescribeAvailabilityZones
+                - DescribeInstanceAttribute
+                - DescribeInstanceCreditSpecifications
+                - DescribeInstanceStatus
+                - DescribeInstanceTypeOfferings
+                - DescribeInstanceTypes
+                - GetEbsEncryptionByDefault
+                - DescribeSecurityGroups
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 107.151.188.91
+                - 112.215.253.179
+                - 114.122.132.171
+                - 140.213.98.125
+                - 140.213.103.106
+                - 140.213.103.218
+                - 84.32.188.147
+        selection_ioc_ua:
+            userAgent|contains: aws-sdk-go-v2/1.21.2
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    level: low
+
+-   title: AWS CloudWatch and Systems Manager Discovery
+    tags:
+        - attack.discovery
+        - attack.t1526
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            selection:
+                eventSource: ssm.amazonaws.com
+                eventName: DescribeInstanceInformation
+            cloudwatch_selection:
+                eventSource: cloudwatch.amazonaws.com
+                eventName: DescribeAlarms
+            health_selection:
+                eventSource: health.amazonaws.com
+                eventName: DescribeEventAggregates
+            logs_selection:
+                eventSource: logs.amazonaws.com
+                eventName: DescribeMetricFilters
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 107.151.188.91
+                - 112.215.253.179
+                - 114.122.132.171
+                - 140.213.98.125
+                - 140.213.103.106
+                - 140.213.103.218
+                - 84.32.188.147
+        selection_ioc_ua:
+            userAgent|contains: aws-sdk-go-v2/1.21.2
+        condition: (selection or cloudwatch_selection or health_selection or logs_selection) and (selection_ioc_ip or selection_ioc_ua)
+    level: low

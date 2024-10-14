@@ -405,7 +405,7 @@ if __name__ == "__main__":
     # file_prefixes.append('sugarcrm_cloud_incident_black_hat')
     # file_prefixes.append('tales_from_the_cloud_trenches_aws_activity_to_phishing')
     # file_prefixes.append('tales_from_the_cloud_trenches_ecs_crypto_mining')
-    file_prefixes.append('tales_from_the_cloud_trenches_raiding_for_vaults_buckets_secrets')
+    # file_prefixes.append('tales_from_the_cloud_trenches_raiding_for_vaults_buckets_secrets')
     # file_prefixes.append('the_curious_case_of_dangerdev_protonmail_me')
     # file_prefixes.append('two_real_life_examples_of_why_limiting_permissions_works_lessons_from_aws_cirt_(case_1)')
     # file_prefixes.append('two_real_life_examples_of_why_limiting_permissions_works_lessons_from_aws_cirt_(case_2)')

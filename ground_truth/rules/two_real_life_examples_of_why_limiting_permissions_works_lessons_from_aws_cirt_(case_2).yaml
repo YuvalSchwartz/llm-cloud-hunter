@@ -28,10 +28,30 @@
         selection_iam:
             eventSource: iam.amazonaws.com
             eventName:
-                - 'Get*'
-                - 'List*'
+                - Get
+                - List
         selection_error:
             errorCode: 'Client.UnauthorizedOperation'
             errorMessage|contains: 'You are not authorized to perform this operation'
         condition: selection_iam and selection_error
+    level: low
+-   title: Access Analyzer Policy Generation Detected
+    status: experimental
+    description: Detects the use of Access Analyzer to generate IAM policies, which may indicate policy discovery activities.
+    references:
+        - https://aws.amazon.com/blogs/security/two-real-life-examples-of-why-limiting-permissions-works-lessons-from-aws-cirt/
+    author: LLMCloudHunter
+    date: 2024/09/22
+    tags:
+        - attack.t1580
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: access-analyzer.amazonaws.com
+            eventName: GeneratePolicy
+        condition: selection
+    falsepositives:
+        - Legitimate IAM policy generation activities.
     level: low

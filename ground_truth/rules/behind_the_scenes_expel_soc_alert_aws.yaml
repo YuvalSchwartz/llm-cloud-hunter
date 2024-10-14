@@ -115,4 +115,83 @@
         selection_ioc_ua:
             userAgent|contains: aws-sdk-go/1.4.10 (go1.8.3; linux; amd64)
         condition: selection and (selection_ioc_ip or selection_ioc_ua)
-    level: 
+    level: high
+-   title: AWS EC2 Describe Instances - Cloud Infrastructure Discovery
+    status: experimental
+    description: Detects the enumeration of EC2 instances in AWS, which could be indicative of reconnaissance activity.
+    references:
+        - https://expel.com/blog/behind-the-scenes-expel-soc-alert-aws/
+    author: LLMCloudHunter
+    date: 2024/09/22
+    tags:
+        - attack.t1580
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: ec2.amazonaws.com
+            eventName: DescribeInstances
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 1.2.3.4
+                - 107.191.99.95
+        selection_ioc_ua:
+            userAgent|contains: aws-sdk-go/1.4.10 (go1.8.3; linux; amd64)
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    falsepositives:
+        - Legitimate infrastructure monitoring or automation tools.
+    level: low
+-   title: AWS EC2 Create Key Pair - Use of Alternate Authentication Material
+    status: experimental
+    description: Detects the creation of new SSH key pairs in AWS, which may indicate attempts to establish unauthorized access or evade detection.
+    references:
+        - https://expel.com/blog/behind-the-scenes-expel-soc-alert-aws/
+    author: LLMCloudHunter
+    date: 2024/09/22
+    tags:
+        - attack.t1550
+        - attack.t1550.001
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: ec2.amazonaws.com
+            eventName: CreateKeyPair
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 1.2.3.4
+                - 107.191.99.95
+        selection_ioc_ua:
+            userAgent|contains: aws-sdk-go/1.4.10 (go1.8.3; linux; amd64)
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    falsepositives:
+        - Legitimate key pair creation for new instances or automation processes.
+    level: high
+-   title: AWS IAM Disable Access Key - Account Access Removal
+    status: experimental
+    description: Detects the disabling of an AWS access key, which could indicate account compromise remediation or malicious activity.
+    references:
+        - https://expel.com/blog/behind-the-scenes-expel-soc-alert-aws/
+    author: LLMCloudHunter
+    date: 2024/09/22
+    tags:
+        - attack.t1531
+    logsource:
+        product: aws
+        service: cloudtrail
+    detection:
+        selection:
+            eventSource: iam.amazonaws.com
+            eventName: DisableAccessKey
+        selection_ioc_ip:
+            sourceIPAddress:
+                - 1.2.3.4
+                - 107.191.99.95
+        selection_ioc_ua:
+            userAgent|contains: aws-sdk-go/1.4.10 (go1.8.3; linux; amd64)
+        condition: selection and (selection_ioc_ip or selection_ioc_ua)
+    falsepositives:
+        - Legitimate key disabling during routine security reviews or key rotations.
+    level: high

@@ -11,11 +11,11 @@
             eventName:
                 - CreateKeyPair
                 - ImportKeyPair
-    selection_ip:
+    selection_ioc_ip:
         sourceIPAddress: 192.168.0.1
-    selection_ua:
-        userAgent|startswith: 'aws-cli/'
-    condition: selection and (selection_ip or selection_ua)
+    selection_ioc_ua:
+        userAgent|contains: aws-cli/1.18.33 Python/3.5.1 Linux/3.10.0-1062.el7.x86_64 botocore/1.15.33
+    condition: selection and (selection_ioc_ip or selection_ioc_ua)
     level: high
 -   tags:
         - attack.discovery
@@ -33,11 +33,11 @@
         selection_rds:
             eventSource: rds.amazonaws.com
             eventName: DescribeDBInstances
-        selection_ip:
+        selection_ioc_ip:
             sourceIPAddress: 192.168.0.1
-        selection_ua:
-            userAgent|startswith: aws-cli/
-        condition: (selection_s3 or selection_ec2 or selection_rds) and (selection_ip or selection_ua)
+        selection_ioc_ua:
+            userAgent|contains: aws-cli/1.18.33 Python/3.5.1 Linux/3.10.0-1062.el7.x86_64 botocore/1.15.33
+        condition: (selection_s3 or selection_ec2 or selection_rds) and (selection_ioc_ip or selection_ioc_ua)
     level: medium
 -   tags:
         - attack.persistence
@@ -52,11 +52,11 @@
         selection_modify:
             eventSource: ec2.amazonaws.com
             eventName: AuthorizeSecurityGroupIngress
-        selection_ip:
+        selection_ioc_ip:
             sourceIPAddress: 192.168.0.1
-        selection_ua:
-            userAgent|startswith: aws-cli/
-        condition: selection_describe and selection_modify and (selection_ip or selection_ua)
+        selection_ioc_ua:
+            userAgent|contains: aws-cli/1.18.33 Python/3.5.1 Linux/3.10.0-1062.el7.x86_64 botocore/1.15.33
+        condition: selection_describe and selection_modify and (selection_ioc_ip or selection_ioc_ua)
     level: high
 -   tags:
         - attack.execution
@@ -74,9 +74,9 @@
         selection_run:
             eventSource: ec2.amazonaws.com
             eventName: RunInstances
-        selection_ip:
+        selection_ioc_ip:
             sourceIPAddress: '192.168.0.1'
-        selection_ua:
-            userAgent|startswith: 'aws-cli/'
-        condition: all of selection_* and (selection_ip or selection_ua)
+        selection_ioc_ua:
+            userAgent|contains: aws-cli/1.18.33 Python/3.5.1 Linux/3.10.0-1062.el7.x86_64 botocore/1.15.33
+        condition: all of selection_* and (selection_ioc_ip or selection_ioc_ua)
     level: high
