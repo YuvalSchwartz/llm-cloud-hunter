@@ -4,4 +4,5 @@ openai
 pyparsing
 python-dotenv
 selenium
+tiktoken
 webdriver-manager

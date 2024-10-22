@@ -1,5 +1,3 @@
-import logging
-
 from image_classifier import ImageClassifier
 from image_transcriber import ImageTranscriber
 
