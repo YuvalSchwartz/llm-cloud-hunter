@@ -56,23 +56,28 @@ if __name__ == '__main__':
     # Done by Yuval
     # urls.append('https://permiso.io/blog/s/anatomy-of-attack-exposed-keys-to-crypto-mining/')
     # urls.append('https://expel.com/blog/behind-the-scenes-expel-soc-alert-aws/')
-    # urls.append('https://sysdig.com/blog/cloud-breach-terraform-data-theft/')
-
-    #Done by Lavi
+    # urls.append('https://unit42.paloaltonetworks.com/shinyhunters-ransomware-extortion/')
+    # urls.append('https://unit42.paloaltonetworks.com/malicious-operations-of-exposed-iam-keys-cryptojacking/')
     # urls.append('https://unit42.paloaltonetworks.com/compromised-cloud-compute-credentials/')
-    # urls.append('https://expel.com/blog/finding-evil-in-aws/')
     # urls.append('https://www.lacework.com/blog/detecting-ai-resource-hijacking-with-composite-alerts/')
-    # urls.append('https://aws.amazon.com/blogs/security/two-real-life-examples-of-why-limiting-permissions-works-lessons-from-aws-cirt/')
-    # urls.append('https://www.invictus-ir.com/news/the-curious-case-of-dangerdev-protonmail-me/')
+    # urls.append('https://expel.com/blog/finding-evil-in-aws/')
+
     # urls.append('https://expel.com/blog/incident-report-from-cli-to-console-chasing-an-attacker-in-aws/')
     # urls.append('https://expel.com/blog/incident-report-stolen-aws-access-keys/')
-    # urls.append('https://unit42.paloaltonetworks.com/sugarcrm-cloud-incident-black-hat/')
-    # urls.append('https://www.invictus-ir.com/news/ransomware-in-the-cloud/')
     # urls.append('https://permiso.io/blog/lucr-3-scattered-spider-getting-saas-y-in-the-cloud/')
-    # urls.append('https://unit42.paloaltonetworks.com/malicious-operations-of-exposed-iam-keys-cryptojacking/')
+    # urls.append('https://www.invictus-ir.com/news/ransomware-in-the-cloud/')
+    # urls.append('https://sysdig.com/blog/cloud-breach-terraform-data-theft/')
+    # urls.append('https://securitylabs.datadoghq.com/articles/tales-from-the-cloud-trenches-ecs-crypto-mining/')
+    # urls.append('https://securitylabs.datadoghq.com/articles/tales-from-the-cloud-trenches-raiding-for-vaults-buckets-secrets/')
     # urls.append('https://securitylabs.datadoghq.com/articles/tales-from-the-cloud-trenches-aws-activity-to-phishing/')
+    # urls.append('https://www.invictus-ir.com/news/the-curious-case-of-dangerdev-protonmail-me/')
+    # urls.append('https://aws.amazon.com/blogs/security/two-real-life-examples-of-why-limiting-permissions-works-lessons-from-aws-cirt/')
     # urls.append('https://permiso.io/blog/s/unmasking-guivil-new-cloud-threat-actor/')
-    # urls.append('https://unit42.paloaltonetworks.com/shinyhunters-ransomware-extortion/')
+    urls.append('https://unit42.paloaltonetworks.com/sugarcrm-cloud-incident-black-hat/')
+
+
+
+    #Done by Lavi
 
     #####   Done but need ground truth  #####
 
@@ -81,8 +86,6 @@ if __name__ == '__main__':
 
     # not working...
     #   error: in _process_paragraph KeyError: 's'
-    urls.append('https://securitylabs.datadoghq.com/articles/tales-from-the-cloud-trenches-raiding-for-vaults-buckets-secrets/')
-    urls.append('https://securitylabs.datadoghq.com/articles/tales-from-the-cloud-trenches-ecs-crypto-mining/')
 
 
     start_time = time.time()
