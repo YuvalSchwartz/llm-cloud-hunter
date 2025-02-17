@@ -23,3 +23,15 @@ In the folder output, using the name of the OSCTI,
 If you use this repository, please cite it using the following DOI:
 
 [![DOI](https://zenodo.org/badge/DOI/14884182.svg)](https://zenodo.org/records/14884182)
+
+### 📑 Citation (BibTeX)
+For citing the **artifact**, use:
+
+```bibtex
+@article{schwartz2024llmcloudhunter,
+  title={Llmcloudhunter: Harnessing llms for automated extraction of detection rules from cloud-based cti},
+  author={Schwartz, Yuval and Benshimol, Lavi and Mimran, Dudu and Elovici, Yuval and Shabtai, Asaf},
+  journal={arXiv preprint arXiv:2407.05194},
+  year={2024}
+}
+```
