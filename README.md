@@ -13,4 +13,11 @@ if __name__ == '__main__':
 ```
 
 ### Output:
-In the folder output, using the name of the OSCTI, 
+In the folder output, using the name of the OSCTI,
+
+
+## 📄 Citation and DOI
+
+If you use this repository, please cite it using the following DOI:
+
+[![DOI](https://zenodo.org/badge/DOI/14884182.svg)](https://zenodo.org/records/14884182)
