@@ -1,5 +1,7 @@
 # LLM Cloud Hunter
 
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+
 ## Running instructrions
 
 To run LLM-Cloud-Hunter, use the main.py file.
